@@ -192,6 +192,13 @@ function App() {
           {screen === "rest" && (
             <RestScreen
               current={current}
+              activeExercise={activeExercise}
+              activeSet={activeSet}
+              completed={completed}
+              completedSets={completedSets}
+              totalSets={totalSets}
+              progress={progress}
+              sessionLog={sessionLog}
               currentRest={currentRest}
               restSeconds={restSeconds}
               nextTarget={nextTarget}
@@ -226,6 +233,13 @@ function App() {
           {screen === "exerciseDone" && (
             <ExerciseDoneScreen
               current={current}
+              activeExercise={activeExercise}
+              activeSet={activeSet}
+              completed={completed}
+              completedSets={completedSets}
+              totalSets={totalSets}
+              progress={progress}
+              sessionLog={sessionLog}
               currentRest={currentRest}
               restSeconds={restSeconds}
               nextTarget={nextTarget}
@@ -576,10 +590,27 @@ function MiniStepper({ label, value, unit, onMinus, onPlus }) {
   );
 }
 
-function RestScreen({ currentRest, restSeconds, nextTarget, continueAfterRest, onEditSet, setScreen }) {
+function RestScreen({
+  current,
+  activeExercise,
+  activeSet,
+  completed,
+  completedSets,
+  totalSets,
+  progress,
+  sessionLog,
+  currentRest,
+  restSeconds,
+  nextTarget,
+  continueAfterRest,
+  onEditSet,
+  setScreen,
+}) {
+  const [summaryOpen, setSummaryOpen] = useState(false);
   const minutes = Math.floor(restSeconds / 60).toString().padStart(2, "0");
   const seconds = (restSeconds % 60).toString().padStart(2, "0");
   const nextExercise = nextTarget ? workoutPlan.exercises[nextTarget.exercise] : null;
+  const exerciseCompletedSets = current.sets.filter((_, setIndex) => completed[`${activeExercise}-${setIndex}`]).length;
 
   return (
     <div className="page rest-page">
@@ -587,7 +618,9 @@ function RestScreen({ currentRest, restSeconds, nextTarget, continueAfterRest, o
         <button className="icon-button" aria-label="Back to workout" onClick={() => setScreen("workout")}>
           <ChevronLeft size={32} />
         </button>
-        <BrandMark />
+        <button className="brand-button" aria-label="Open workout summary" onClick={() => setSummaryOpen(true)}>
+          <BrandMark />
+        </button>
         <span>Rest</span>
       </header>
 
@@ -614,12 +647,32 @@ function RestScreen({ currentRest, restSeconds, nextTarget, continueAfterRest, o
           {restSeconds > 0 ? "SKIP REST" : "NEXT SET"}
         </button>
       </div>
+
+      {summaryOpen && (
+        <WorkoutSummarySheet
+          activeExercise={activeExercise}
+          activeSet={activeSet}
+          completedSets={completedSets}
+          totalSets={totalSets}
+          progress={progress}
+          exerciseCompletedSets={exerciseCompletedSets}
+          sessionLog={sessionLog}
+          onClose={() => setSummaryOpen(false)}
+        />
+      )}
     </div>
   );
 }
 
 function ExerciseDoneScreen({
   current,
+  activeExercise,
+  activeSet,
+  completed,
+  completedSets,
+  totalSets,
+  progress,
+  sessionLog,
   currentRest,
   restSeconds,
   nextTarget,
@@ -628,9 +681,11 @@ function ExerciseDoneScreen({
   setScreen,
 }) {
   const [timerMode, setTimerMode] = useState(false);
+  const [summaryOpen, setSummaryOpen] = useState(false);
   const minutes = Math.floor(restSeconds / 60).toString().padStart(2, "0");
   const seconds = (restSeconds % 60).toString().padStart(2, "0");
   const nextExercise = nextTarget ? workoutPlan.exercises[nextTarget.exercise] : null;
+  const exerciseCompletedSets = current.sets.filter((_, setIndex) => completed[`${activeExercise}-${setIndex}`]).length;
 
   useEffect(() => {
     const timeout = window.setTimeout(() => setTimerMode(true), 900);
@@ -643,7 +698,9 @@ function ExerciseDoneScreen({
         <button className="icon-button" aria-label="Back to workout" onClick={() => setScreen("workout")}>
           <ChevronLeft size={32} />
         </button>
-        <BrandMark />
+        <button className="brand-button" aria-label="Open workout summary" onClick={() => setSummaryOpen(true)}>
+          <BrandMark />
+        </button>
         <span>Next</span>
       </header>
 
@@ -676,6 +733,19 @@ function ExerciseDoneScreen({
           {restSeconds > 0 ? "SKIP REST" : "NEXT EXERCISE"}
         </button>
       </div>
+
+      {summaryOpen && (
+        <WorkoutSummarySheet
+          activeExercise={activeExercise}
+          activeSet={activeSet}
+          completedSets={completedSets}
+          totalSets={totalSets}
+          progress={progress}
+          exerciseCompletedSets={exerciseCompletedSets}
+          sessionLog={sessionLog}
+          onClose={() => setSummaryOpen(false)}
+        />
+      )}
     </div>
   );
 }
