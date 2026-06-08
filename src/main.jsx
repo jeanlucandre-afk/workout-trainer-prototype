@@ -551,17 +551,63 @@ function WorkoutSummarySheet({
   sessionLog,
   onClose,
 }) {
+  const [expanded, setExpanded] = useState(false);
+  const sheetDragStartRef = useRef(null);
   const exercise = workoutPlan.exercises[activeExercise];
+  const nextSet =
+    activeSet < exercise.sets.length - 1
+      ? { exerciseIndex: activeExercise, setIndex: activeSet + 1 }
+      : activeExercise < workoutPlan.exercises.length - 1
+        ? { exerciseIndex: activeExercise + 1, setIndex: 0 }
+        : null;
+  const nextExercise = nextSet ? workoutPlan.exercises[nextSet.exerciseIndex] : null;
   const volume = sessionLog.reduce(
     (total, exerciseSets) =>
       total + exerciseSets.reduce((sum, set) => sum + set.reps * set.weight, 0),
     0,
   );
 
+  function handleSummaryWheel(event) {
+    if (event.deltaY < -4) {
+      setExpanded(true);
+    }
+  }
+
+  function handleSummaryPointerDown(event) {
+    sheetDragStartRef.current = event.clientY;
+  }
+
+  function handleSummaryPointerMove(event) {
+    if (sheetDragStartRef.current === null) {
+      return;
+    }
+    if (sheetDragStartRef.current - event.clientY > 22) {
+      setExpanded(true);
+      sheetDragStartRef.current = null;
+    }
+  }
+
+  function clearSummaryDrag() {
+    sheetDragStartRef.current = null;
+  }
+
   return (
     <div className="sheet-backdrop" onClick={onClose}>
-      <section className="summary-sheet" onClick={(event) => event.stopPropagation()}>
-        <div className="sheet-handle" />
+      <section
+        className={`summary-sheet ${expanded ? "expanded" : ""}`}
+        onClick={(event) => event.stopPropagation()}
+        onWheel={handleSummaryWheel}
+        onPointerDown={handleSummaryPointerDown}
+        onPointerMove={handleSummaryPointerMove}
+        onPointerUp={clearSummaryDrag}
+        onPointerCancel={clearSummaryDrag}
+      >
+        <button
+          className="sheet-handle"
+          type="button"
+          aria-label={expanded ? "Collapse workout summary" : "Expand workout summary"}
+          onClick={() => setExpanded((value) => !value)}
+        />
         <header>
           <span>Workout summary</span>
           <button className="icon-button" onClick={onClose} aria-label="Close summary">
@@ -587,6 +633,56 @@ function WorkoutSummarySheet({
             <span>Est. volume</span>
             <strong>{volume.toLocaleString()}</strong>
           </article>
+        </div>
+        <div className="summary-expanded">
+          <article className="summary-next">
+            <span>Up next</span>
+            <h3>{nextExercise ? nextExercise.name : "Workout complete"}</h3>
+            <p>
+              {nextExercise
+                ? `Set ${nextSet.setIndex + 1} · ${sessionLabel(nextExercise, nextSet.setIndex)}`
+                : "All planned sets are logged."}
+            </p>
+          </article>
+
+          <div className="summary-routine">
+            <span>Full workout</span>
+            {workoutPlan.exercises.map((item, exerciseIndex) => {
+              const loggedCount =
+                exerciseIndex < activeExercise
+                  ? item.sets.length
+                  : exerciseIndex === activeExercise
+                    ? exerciseCompletedSets
+                    : 0;
+              return (
+                <article
+                  className={`summary-exercise ${exerciseIndex === activeExercise ? "current" : ""}`}
+                  key={item.name}
+                >
+                  <img src={item.image} alt="" />
+                  <div>
+                    <strong>{item.name}</strong>
+                    <small>{loggedCount}/{item.sets.length} sets · {item.muscle}</small>
+                    <div className="summary-set-row">
+                      {item.sets.map((set, setIndex) => {
+                        const isDone =
+                          exerciseIndex < activeExercise ||
+                          (exerciseIndex === activeExercise && setIndex < exerciseCompletedSets);
+                        const isCurrent = exerciseIndex === activeExercise && setIndex === activeSet;
+                        return (
+                          <i
+                            className={`${isDone ? "done" : ""} ${isCurrent ? "current" : ""}`}
+                            key={`${item.name}-${setIndex}`}
+                            title={`Set ${setIndex + 1}: ${set.reps} reps`}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
         </div>
       </section>
     </div>
