@@ -237,7 +237,7 @@ button {
 }
 
 .onboarding-hero {
-  margin-top: 44px;
+  margin-top: 34px;
   text-align: center;
 }
 
@@ -250,8 +250,8 @@ button {
 
 .onboarding-hero h1 {
   max-width: 360px;
-  margin: 10px auto 14px;
-  font-size: 40px;
+  margin: 8px auto 12px;
+  font-size: 37px;
   line-height: 0.96;
   font-weight: 1000;
   text-transform: uppercase;
@@ -300,17 +300,75 @@ button {
   font-weight: 800;
 }
 
+.metric-stack {
+  display: grid;
+  gap: 10px;
+  margin: 22px 0 14px;
+}
+
+.onboarding-metric {
+  padding: 12px;
+  border-radius: 23px;
+  background: var(--panel);
+}
+
+.onboarding-metric > span,
+.follow-up-group > span {
+  display: block;
+  margin: 0 0 9px 2px;
+  color: var(--dim);
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.onboarding-metric > div {
+  display: grid;
+  grid-template-columns: 48px 1fr 48px;
+  gap: 8px;
+  align-items: center;
+}
+
+.onboarding-metric button {
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 19px;
+  background: var(--panel-2);
+  transition: transform 150ms var(--ease-out-quint), background 150ms var(--ease);
+}
+
+.onboarding-metric strong {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border-radius: 19px;
+  background: #060607;
+  font-size: 30px;
+  line-height: 1;
+  font-weight: 1000;
+  font-variant-numeric: tabular-nums;
+}
+
+.onboarding-metric small {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1;
+}
+
 .choice-stack {
   display: grid;
-  gap: 12px;
-  margin-top: 24px;
-  margin-bottom: 18px;
+  gap: 9px;
+  margin-top: 20px;
+  margin-bottom: 16px;
 }
 
 .choice-card {
   width: 100%;
-  min-height: 72px;
-  padding: 16px 16px 16px 20px;
+  min-height: 62px;
+  padding: 13px 14px 13px 17px;
   display: grid;
   grid-template-columns: 1fr 34px;
   align-items: center;
@@ -327,7 +385,7 @@ button {
 
 .choice-card span {
   min-width: 0;
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1.12;
   font-weight: 950;
   text-transform: uppercase;
@@ -357,29 +415,59 @@ button {
 
 .choice-card:active,
 .text-action:active,
-.onboarding-top button:active {
+.onboarding-top button:active,
+.onboarding-metric button:active {
   transform: scale(0.98);
+}
+
+.follow-up-group {
+  margin-top: 4px;
+}
+
+.follow-up-group .choice-stack {
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 0;
+}
+
+.follow-up-group .choice-card {
+  min-height: 58px;
+  padding: 12px;
+  grid-template-columns: 1fr 26px;
+  border-radius: 20px;
+}
+
+.follow-up-group .choice-card span {
+  font-size: 13px;
+  line-height: 1.15;
+}
+
+.follow-up-group .choice-card i {
+  width: 26px;
+  height: 26px;
+  border-width: 1px;
 }
 
 .brief-card {
   display: grid;
-  gap: 10px;
-  margin-top: 34px;
+  gap: 8px;
+  margin-top: 22px;
+  margin-bottom: 16px;
 }
 
 .brief-card article,
 .intake-strip article {
-  padding: 17px;
-  border-radius: 24px;
+  padding: 13px;
+  border-radius: 22px;
   background: var(--panel);
 }
 
 .brief-card strong,
 .intake-strip strong {
   display: block;
-  margin-top: 8px;
+  margin-top: 6px;
   color: var(--text);
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1.2;
   font-weight: 950;
 }

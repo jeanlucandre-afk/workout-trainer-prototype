@@ -29,76 +29,154 @@ function formatWeight(weight) {
 }
 
 const onboardingDefaults = {
-  goal: "Lose 8-10 kg while building definition",
-  timeline: "6 months",
-  schedule: "3 days/week",
-  sessionLength: "60-75 min",
-  trainingStyle: ["Machines", "Dumbbells", "Treadmill walking"],
-  avoid: ["Jumping", "Sprints", "Deep loaded squats"],
-  constraints: ["Runner's knee", "Lower-back discomfort", "Desk job"],
-  baseline: ["Leg press 100 KG x 10", "Hip thrust 70 KG x 10", "RDL 40 KG x 8"],
-  lifestyle: ["5k steps/day", "6.5h sleep", "Moderate-high stress"],
-  nutrition: ["Inconsistent protein", "Weekend overeating", "Stress eating"],
-  motivation: "8/10",
-  confidence: "6/10",
-  mainConcern: "Fear of re-injuring knee",
+  age: 28,
+  height: 175,
+  weight: 78,
+  primaryGoal: "Lose fat",
+  goalDetails: ["Build muscle definition", "Improve energy", "Feel confident in the gym"],
+  timeline: "3-6 months",
+  trainingDays: 3,
+  sessionLength: 60,
+  experience: "Some gym experience",
+  trainingStyle: ["Machines", "Dumbbells"],
+  cardioPreference: "Incline walking or cycling",
+  pains: ["Lower back tightness"],
+  pastInjuries: ["No major past injury"],
+  movementsToAvoid: ["High-impact jumping"],
+  equipment: ["Full gym", "Machines", "Dumbbells"],
+  lifestyle: ["Mostly seated work", "Moderate stress"],
+  sleep: 7,
+  nutrition: ["Wants higher protein", "Needs simple meals"],
+  motivation: 8,
+  confidence: 6,
+  mainConcern: "Staying consistent",
 };
 
 const onboardingSteps = [
   {
-    eyebrow: "Goal",
-    title: "What should this plan solve?",
-    copy: "The case study points to fat loss, tone, confidence, energy, and less discomfort.",
-    key: "goal",
+    eyebrow: "Profile",
+    title: "Start with the basics",
+    copy: "Height, weight, and age help the coach scale exercise selection, volume, and progress targets.",
+    type: "metrics",
+    metrics: [
+      { key: "age", label: "Age", unit: "", min: 13, max: 85, step: 1 },
+      { key: "height", label: "Height", unit: "cm", min: 120, max: 220, step: 1 },
+      { key: "weight", label: "Weight", unit: "kg", min: 35, max: 220, step: 1 },
+    ],
+  },
+  {
+    eyebrow: "Goals",
+    title: "What are we training for?",
+    copy: "Pick the main outcome first. The extra goals help the chatbot choose the right training emphasis.",
+    key: "primaryGoal",
     type: "single",
+    options: ["Lose fat", "Build muscle", "Get stronger", "Improve general fitness"],
+  },
+  {
+    eyebrow: "Motivation",
+    title: "What else matters?",
+    copy: "These are the emotional and practical reasons the plan should support beyond the main goal.",
+    key: "goalDetails",
+    type: "multi",
     options: [
-      "Lose 8-10 kg while building definition",
-      "Improve gym confidence",
-      "Reduce lower-back discomfort",
+      "Build muscle definition",
+      "Improve energy",
+      "Feel confident in the gym",
+      "Reduce pain",
+    ],
+  },
+  {
+    eyebrow: "Schedule",
+    title: "What can fit your real week?",
+    copy: "A plan only works if the weekly frequency and session length are realistic.",
+    type: "metrics",
+    metrics: [
+      { key: "trainingDays", label: "Days/week", unit: "days", min: 1, max: 7, step: 1 },
+      { key: "sessionLength", label: "Session", unit: "min", min: 20, max: 120, step: 5 },
     ],
   },
   {
     eyebrow: "Training",
-    title: "What fits her week?",
-    copy: "Andrea already trains three times per week and prefers controlled gym work over high-intensity circuits.",
+    title: "What experience do you have?",
+    copy: "This controls exercise complexity, starting intensity, and how much explanation the plan needs.",
+    key: "experience",
+    type: "single",
+    options: ["Beginner", "Some gym experience", "Consistent for 6+ months", "Advanced"],
+  },
+  {
+    eyebrow: "Preference",
+    title: "How do you like to train?",
+    copy: "Preferences help the chatbot create a plan the person will actually want to repeat.",
     key: "trainingStyle",
     type: "multi",
-    options: ["Machines", "Dumbbells", "Treadmill walking", "Cycling"],
-    stat: { label: "Current rhythm", value: "3x", detail: "60-75 min sessions" },
+    options: ["Machines", "Dumbbells", "Barbells", "Bodyweight"],
+  },
+  {
+    eyebrow: "Pain",
+    title: "Any pain right now?",
+    copy: "Current pain changes exercise selection immediately. Select anything the plan should protect.",
+    key: "pains",
+    type: "multi",
+    options: ["No pain", "Knee pain", "Lower back tightness", "Shoulder pain", "Hip pain"],
+  },
+  {
+    eyebrow: "Injuries",
+    title: "Any past injuries?",
+    copy: "Past injuries tell the coach where to be conservative and what movements to avoid early.",
+    key: "pastInjuries",
+    type: "multi",
+    options: ["No major past injury", "Knee injury", "Back injury", "Shoulder injury", "Ankle injury"],
   },
   {
     eyebrow: "Limits",
-    title: "What should the plan avoid?",
-    copy: "Runner's knee means the plan needs low-impact lower-body work and no deep loaded squats.",
-    key: "avoid",
+    title: "What should we avoid?",
+    copy: "These guardrails keep the plan effective without forcing movements that do not fit your body.",
+    key: "movementsToAvoid",
     type: "multi",
-    options: ["Jumping", "Sprints", "Deep loaded squats", "Burpees"],
+    options: ["High-impact jumping", "Running", "Deep loaded squats", "Overhead pressing", "Burpees"],
   },
   {
-    eyebrow: "Baseline",
-    title: "What can she lift today?",
-    copy: "These numbers anchor the first plan so the weights feel specific, not generic.",
-    key: "baseline",
+    eyebrow: "Gym setup",
+    title: "What can you train with?",
+    copy: "The chatbot should only prescribe equipment you can actually access.",
+    key: "equipment",
     type: "multi",
-    options: ["Leg press 100 KG x 10", "Hip thrust 70 KG x 10", "RDL 40 KG x 8", "Lat pulldown 40 KG x 10"],
-    stat: { label: "Body profile", value: "72 KG", detail: "168 cm · 29% est. body fat" },
+    options: ["Full gym", "Machines", "Dumbbells", "Barbells", "Home only"],
   },
   {
-    eyebrow: "Lifestyle",
+    eyebrow: "Recovery",
     title: "What affects recovery?",
-    copy: "Sleep, stress, movement, and protein consistency should change how aggressive the plan feels.",
+    copy: "Steps, sleep, stress, and work style decide how aggressive the weekly plan should be.",
     key: "lifestyle",
     type: "multi",
-    options: ["5k steps/day", "6.5h sleep", "Moderate-high stress", "1.5L water"],
+    options: ["Mostly seated work", "Active job", "Low daily steps", "Moderate stress", "High stress"],
+    metrics: [{ key: "sleep", label: "Sleep", unit: "h", min: 4, max: 10, step: 0.5 }],
   },
   {
-    eyebrow: "Readiness",
+    eyebrow: "Nutrition",
+    title: "What should nutrition support?",
+    copy: "The workout can stay simple, but the plan should know the biggest nutrition constraint.",
+    key: "nutrition",
+    type: "multi",
+    options: ["Wants higher protein", "Needs simple meals", "Stress eating", "Weekend overeating", "No nutrition focus"],
+  },
+  {
+    eyebrow: "Mindset",
+    title: "How ready do you feel?",
+    copy: "Motivation and confidence shape the tone, milestones, and how much support the plan should include.",
+    type: "metrics",
+    metrics: [
+      { key: "motivation", label: "Motivation", unit: "/10", min: 1, max: 10, step: 1 },
+      { key: "confidence", label: "Confidence", unit: "/10", min: 1, max: 10, step: 1 },
+    ],
+  },
+  {
+    eyebrow: "Coach note",
     title: "What should the coach remember?",
-    copy: "Motivation is high, confidence is moderate, and the plan needs to protect the knee.",
+    copy: "This gives the chatbot the human reason behind the plan, not only the workout variables.",
     key: "mainConcern",
     type: "single",
-    options: ["Fear of re-injuring knee", "Gym confidence", "Weekend overeating"],
-    stat: { label: "Mindset", value: "8/10", detail: "Motivation · 6/10 confidence" },
+    options: ["Staying consistent", "Fear of injury", "Gym confidence", "Losing motivation"],
   },
 ];
 
@@ -453,6 +531,14 @@ function App() {
     });
   }
 
+  function updateOnboardingMetric(metric, delta) {
+    setOnboardingProfile((previous) => {
+      const currentValue = Number(previous[metric.key]) || 0;
+      const nextValue = Math.min(metric.max, Math.max(metric.min, currentValue + delta));
+      return { ...previous, [metric.key]: nextValue };
+    });
+  }
+
   function nextOnboardingStep() {
     if (onboardingStep < onboardingSteps.length) {
       setOnboardingStep((value) => value + 1);
@@ -484,6 +570,7 @@ function App() {
               stepIndex={onboardingStep}
               profile={onboardingProfile}
               updateValue={updateOnboardingValue}
+              updateMetric={updateOnboardingMetric}
               nextStep={nextOnboardingStep}
               previousStep={previousOnboardingStep}
               skipToPlan={() => setScreen("plan")}
@@ -601,6 +688,7 @@ function OnboardingScreen({
   stepIndex,
   profile,
   updateValue,
+  updateMetric,
   nextStep,
   previousStep,
   skipToPlan,
@@ -608,6 +696,7 @@ function OnboardingScreen({
   const isSummary = stepIndex >= onboardingSteps.length;
   const step = onboardingSteps[Math.min(stepIndex, onboardingSteps.length - 1)];
   const progress = `${Math.round(((stepIndex + 1) / (onboardingSteps.length + 1)) * 100)}%`;
+  const selected = step.key ? profile[step.key] : null;
 
   if (isSummary) {
     return (
@@ -619,26 +708,30 @@ function OnboardingScreen({
 
         <section className="onboarding-hero reveal">
           <span>Trainer brief</span>
-          <h1>Ready to build Andrea's plan</h1>
-          <p>Use this profile to generate controlled, knee-friendly training with realistic progression.</p>
+          <h1>Ready to build the plan</h1>
+          <p>Use this profile to generate a specific plan with realistic volume, guardrails, and motivation.</p>
         </section>
 
         <section className="brief-card reveal">
           <article>
             <span>Goal</span>
-            <strong>{profile.goal}</strong>
+            <strong>{profile.primaryGoal} · {listText(profile.goalDetails)}</strong>
           </article>
           <article>
-            <span>Training style</span>
-            <strong>{profile.trainingStyle.join(" · ")}</strong>
+            <span>Body profile</span>
+            <strong>{profile.height} cm · {profile.weight} KG · {profile.age} years</strong>
           </article>
           <article>
-            <span>Avoid</span>
-            <strong>{profile.avoid.join(" · ")}</strong>
+            <span>Training setup</span>
+            <strong>{profile.trainingDays} days/week · {profile.sessionLength} min · {listText(profile.equipment)}</strong>
           </article>
           <article>
-            <span>Coach note</span>
-            <strong>{profile.mainConcern}</strong>
+            <span>Guardrails</span>
+            <strong>{listText([...profile.pains, ...profile.pastInjuries, ...profile.movementsToAvoid])}</strong>
+          </article>
+          <article>
+            <span>Mindset</span>
+            <strong>{profile.mainConcern} · Motivation {profile.motivation}/10 · Confidence {profile.confidence}/10</strong>
           </article>
         </section>
 
@@ -654,8 +747,6 @@ function OnboardingScreen({
     );
   }
 
-  const selected = profile[step.key];
-
   return (
     <div className="page onboarding-page">
       <header className="onboarding-top">
@@ -669,29 +760,39 @@ function OnboardingScreen({
         <p>{step.copy}</p>
       </section>
 
-      {step.stat && (
-        <section className="onboarding-stat reveal">
-          <span>{step.stat.label}</span>
-          <strong>{step.stat.value}</strong>
-          <small>{step.stat.detail}</small>
+      {step.metrics && (
+        <section className="metric-stack reveal">
+          {step.metrics.map((metric) => (
+            <OnboardingMetric
+              key={metric.key}
+              metric={metric}
+              value={profile[metric.key]}
+              updateMetric={updateMetric}
+            />
+          ))}
         </section>
       )}
 
-      <section className="choice-stack reveal">
-        {step.options.map((option) => {
-          const active = Array.isArray(selected) ? selected.includes(option) : selected === option;
-          return (
-            <button
-              className={`choice-card ${active ? "selected" : ""}`}
-              key={option}
-              onClick={() => updateValue(step.key, option, step.type)}
-            >
-              <span>{option}</span>
-              <i>{active ? <Check size={20} /> : null}</i>
-            </button>
-          );
-        })}
-      </section>
+      {step.options && (
+        <ChoiceStack
+          options={step.options}
+          selected={selected}
+          selectionType={step.type}
+          onSelect={(option) => updateValue(step.key, option, step.type)}
+        />
+      )}
+
+      {step.followUp && (
+        <div className="follow-up-group reveal">
+          <span>Also important</span>
+          <ChoiceStack
+            options={step.followUp.options}
+            selected={profile[step.followUp.key]}
+            selectionType="multi"
+            onSelect={(option) => updateValue(step.followUp.key, option, "multi")}
+          />
+        </div>
+      )}
 
       <OnboardingFooter
         current={stepIndex + 1}
@@ -703,6 +804,50 @@ function OnboardingScreen({
       />
     </div>
   );
+}
+
+function ChoiceStack({ options, selected, selectionType, onSelect }) {
+  return (
+    <section className="choice-stack reveal">
+      {options.map((option) => {
+        const active = Array.isArray(selected) ? selected.includes(option) : selected === option;
+        return (
+          <button
+            className={`choice-card ${active ? "selected" : ""}`}
+            key={option}
+            onClick={() => onSelect(option, selectionType)}
+          >
+            <span>{option}</span>
+            <i>{active ? <Check size={20} /> : null}</i>
+          </button>
+        );
+      })}
+    </section>
+  );
+}
+
+function OnboardingMetric({ metric, value, updateMetric }) {
+  return (
+    <article className="onboarding-metric">
+      <span>{metric.label}</span>
+      <div>
+        <button onClick={() => updateMetric(metric, -metric.step)} aria-label={`Decrease ${metric.label}`}>
+          <Minus size={22} />
+        </button>
+        <strong>
+          {value}
+          {metric.unit && <small>{metric.unit}</small>}
+        </strong>
+        <button onClick={() => updateMetric(metric, metric.step)} aria-label={`Increase ${metric.label}`}>
+          <Plus size={22} />
+        </button>
+      </div>
+    </article>
+  );
+}
+
+function listText(items) {
+  return items?.length ? items.join(" · ") : "None";
 }
 
 function OnboardingFooter({ current, total, progress, onBack, onNext, nextLabel }) {
@@ -846,11 +991,11 @@ function PlanScreen({
       <section className="intake-strip reveal">
         <article>
           <span>Goal</span>
-          <strong>{onboardingProfile.goal}</strong>
+          <strong>{onboardingProfile.primaryGoal} · {onboardingProfile.trainingDays} days/week</strong>
         </article>
         <article>
           <span>Guardrail</span>
-          <strong>{onboardingProfile.mainConcern}</strong>
+          <strong>{listText([...onboardingProfile.pains, ...onboardingProfile.movementsToAvoid])}</strong>
         </article>
       </section>
 

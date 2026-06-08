@@ -179,23 +179,31 @@ localStorage.getItem("setline.onboardingProfile")
 window.addEventListener("setline:onboarding-complete", (event) => console.log(event.detail))
 ```
 
-The profile is currently based on the Andrea Rodriguez case study and includes:
+The profile is generic and intended to work for any person. It includes body metrics, goals, schedule, pain/injury constraints, equipment access, lifestyle, nutrition, and motivation:
 
 ```json
 {
-  "goal": "Lose 8-10 kg while building definition",
-  "timeline": "6 months",
-  "schedule": "3 days/week",
-  "sessionLength": "60-75 min",
-  "trainingStyle": ["Machines", "Dumbbells", "Treadmill walking"],
-  "avoid": ["Jumping", "Sprints", "Deep loaded squats"],
-  "constraints": ["Runner's knee", "Lower-back discomfort", "Desk job"],
-  "baseline": ["Leg press 100 KG x 10", "Hip thrust 70 KG x 10", "RDL 40 KG x 8"],
-  "lifestyle": ["5k steps/day", "6.5h sleep", "Moderate-high stress"],
-  "nutrition": ["Inconsistent protein", "Weekend overeating", "Stress eating"],
-  "motivation": "8/10",
-  "confidence": "6/10",
-  "mainConcern": "Fear of re-injuring knee"
+  "age": 28,
+  "height": 175,
+  "weight": 78,
+  "primaryGoal": "Lose fat",
+  "goalDetails": ["Build muscle definition", "Improve energy", "Feel confident in the gym"],
+  "timeline": "3-6 months",
+  "trainingDays": 3,
+  "sessionLength": 60,
+  "experience": "Some gym experience",
+  "trainingStyle": ["Machines", "Dumbbells"],
+  "cardioPreference": "Incline walking or cycling",
+  "pains": ["Lower back tightness"],
+  "pastInjuries": ["No major past injury"],
+  "movementsToAvoid": ["High-impact jumping"],
+  "equipment": ["Full gym", "Machines", "Dumbbells"],
+  "lifestyle": ["Mostly seated work", "Moderate stress"],
+  "sleep": 7,
+  "nutrition": ["Wants higher protein", "Needs simple meals"],
+  "motivation": 8,
+  "confidence": 6,
+  "mainConcern": "Staying consistent"
 }
 ```
 
