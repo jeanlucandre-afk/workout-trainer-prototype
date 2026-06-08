@@ -28,6 +28,80 @@ function formatWeight(weight) {
   return weight ? `${weight} KG` : "BW";
 }
 
+const onboardingDefaults = {
+  goal: "Lose 8-10 kg while building definition",
+  timeline: "6 months",
+  schedule: "3 days/week",
+  sessionLength: "60-75 min",
+  trainingStyle: ["Machines", "Dumbbells", "Treadmill walking"],
+  avoid: ["Jumping", "Sprints", "Deep loaded squats"],
+  constraints: ["Runner's knee", "Lower-back discomfort", "Desk job"],
+  baseline: ["Leg press 100 KG x 10", "Hip thrust 70 KG x 10", "RDL 40 KG x 8"],
+  lifestyle: ["5k steps/day", "6.5h sleep", "Moderate-high stress"],
+  nutrition: ["Inconsistent protein", "Weekend overeating", "Stress eating"],
+  motivation: "8/10",
+  confidence: "6/10",
+  mainConcern: "Fear of re-injuring knee",
+};
+
+const onboardingSteps = [
+  {
+    eyebrow: "Goal",
+    title: "What should this plan solve?",
+    copy: "The case study points to fat loss, tone, confidence, energy, and less discomfort.",
+    key: "goal",
+    type: "single",
+    options: [
+      "Lose 8-10 kg while building definition",
+      "Improve gym confidence",
+      "Reduce lower-back discomfort",
+    ],
+  },
+  {
+    eyebrow: "Training",
+    title: "What fits her week?",
+    copy: "Andrea already trains three times per week and prefers controlled gym work over high-intensity circuits.",
+    key: "trainingStyle",
+    type: "multi",
+    options: ["Machines", "Dumbbells", "Treadmill walking", "Cycling"],
+    stat: { label: "Current rhythm", value: "3x", detail: "60-75 min sessions" },
+  },
+  {
+    eyebrow: "Limits",
+    title: "What should the plan avoid?",
+    copy: "Runner's knee means the plan needs low-impact lower-body work and no deep loaded squats.",
+    key: "avoid",
+    type: "multi",
+    options: ["Jumping", "Sprints", "Deep loaded squats", "Burpees"],
+  },
+  {
+    eyebrow: "Baseline",
+    title: "What can she lift today?",
+    copy: "These numbers anchor the first plan so the weights feel specific, not generic.",
+    key: "baseline",
+    type: "multi",
+    options: ["Leg press 100 KG x 10", "Hip thrust 70 KG x 10", "RDL 40 KG x 8", "Lat pulldown 40 KG x 10"],
+    stat: { label: "Body profile", value: "72 KG", detail: "168 cm · 29% est. body fat" },
+  },
+  {
+    eyebrow: "Lifestyle",
+    title: "What affects recovery?",
+    copy: "Sleep, stress, movement, and protein consistency should change how aggressive the plan feels.",
+    key: "lifestyle",
+    type: "multi",
+    options: ["5k steps/day", "6.5h sleep", "Moderate-high stress", "1.5L water"],
+  },
+  {
+    eyebrow: "Readiness",
+    title: "What should the coach remember?",
+    copy: "Motivation is high, confidence is moderate, and the plan needs to protect the knee.",
+    key: "mainConcern",
+    type: "single",
+    options: ["Fear of re-injuring knee", "Gym confidence", "Weekend overeating"],
+    stat: { label: "Mindset", value: "8/10", detail: "Motivation · 6/10 confidence" },
+  },
+];
+
 const demoWorkoutPlan = {
   title: "Lower body + core",
   source: "AI generated plan",
@@ -179,10 +253,19 @@ function publishSessionResult(result) {
   window.dispatchEvent(new CustomEvent("setline:session-complete", { detail: result }));
 }
 
+function publishOnboardingProfile(profile) {
+  if (typeof window === "undefined") return;
+  window.__SETLINE_ONBOARDING_PROFILE__ = profile;
+  window.localStorage.setItem("setline.onboardingProfile", JSON.stringify(profile));
+  window.dispatchEvent(new CustomEvent("setline:onboarding-complete", { detail: profile }));
+}
+
 function App() {
   const screenRef = useRef(null);
   const [workoutState, setWorkoutState] = useState({ status: "loading", workoutPlan: null, error: "" });
-  const [screen, setScreen] = useState("plan");
+  const [screen, setScreen] = useState("onboarding");
+  const [onboardingStep, setOnboardingStep] = useState(0);
+  const [onboardingProfile, setOnboardingProfile] = useState(onboardingDefaults);
   const [activeExercise, setActiveExercise] = useState(0);
   const [activeSet, setActiveSet] = useState(0);
   const [completed, setCompleted] = useState({});
@@ -357,6 +440,36 @@ function App() {
     setScreen("workout");
   }
 
+  function updateOnboardingValue(key, value, type) {
+    setOnboardingProfile((previous) => {
+      if (type !== "multi") {
+        return { ...previous, [key]: value };
+      }
+      const currentValues = previous[key] || [];
+      const nextValues = currentValues.includes(value)
+        ? currentValues.filter((item) => item !== value)
+        : [...currentValues, value];
+      return { ...previous, [key]: nextValues };
+    });
+  }
+
+  function nextOnboardingStep() {
+    if (onboardingStep < onboardingSteps.length) {
+      setOnboardingStep((value) => value + 1);
+      return;
+    }
+    publishOnboardingProfile(onboardingProfile);
+    setScreen("plan");
+  }
+
+  function previousOnboardingStep() {
+    if (onboardingStep > 0) {
+      setOnboardingStep((value) => value - 1);
+      return;
+    }
+    setScreen("plan");
+  }
+
   return (
     <main className="app-shell">
       <div className="phone-frame">
@@ -366,9 +479,20 @@ function App() {
             <ErrorState message={workoutState.error} onRetry={resetToDemoWorkout} />
           )}
           {workoutState.status === "empty" && <EmptyState onLoadDemo={resetToDemoWorkout} />}
+          {workoutState.status === "ready" && screen === "onboarding" && (
+            <OnboardingScreen
+              stepIndex={onboardingStep}
+              profile={onboardingProfile}
+              updateValue={updateOnboardingValue}
+              nextStep={nextOnboardingStep}
+              previousStep={previousOnboardingStep}
+              skipToPlan={() => setScreen("plan")}
+            />
+          )}
           {workoutState.status === "ready" && screen === "plan" && (
             <PlanScreen
               workoutPlan={displayedPlan}
+              onboardingProfile={onboardingProfile}
               completedSets={completedSets}
               totalSets={totalSets}
               progress={progress}
@@ -473,6 +597,131 @@ function App() {
   );
 }
 
+function OnboardingScreen({
+  stepIndex,
+  profile,
+  updateValue,
+  nextStep,
+  previousStep,
+  skipToPlan,
+}) {
+  const isSummary = stepIndex >= onboardingSteps.length;
+  const step = onboardingSteps[Math.min(stepIndex, onboardingSteps.length - 1)];
+  const progress = `${Math.round(((stepIndex + 1) / (onboardingSteps.length + 1)) * 100)}%`;
+
+  if (isSummary) {
+    return (
+      <div className="page onboarding-page">
+        <header className="onboarding-top">
+          <BrandMark />
+          <button onClick={skipToPlan}>View plan</button>
+        </header>
+
+        <section className="onboarding-hero reveal">
+          <span>Trainer brief</span>
+          <h1>Ready to build Andrea's plan</h1>
+          <p>Use this profile to generate controlled, knee-friendly training with realistic progression.</p>
+        </section>
+
+        <section className="brief-card reveal">
+          <article>
+            <span>Goal</span>
+            <strong>{profile.goal}</strong>
+          </article>
+          <article>
+            <span>Training style</span>
+            <strong>{profile.trainingStyle.join(" · ")}</strong>
+          </article>
+          <article>
+            <span>Avoid</span>
+            <strong>{profile.avoid.join(" · ")}</strong>
+          </article>
+          <article>
+            <span>Coach note</span>
+            <strong>{profile.mainConcern}</strong>
+          </article>
+        </section>
+
+        <OnboardingFooter
+          current={onboardingSteps.length + 1}
+          total={onboardingSteps.length + 1}
+          progress={progress}
+          onBack={previousStep}
+          onNext={nextStep}
+          nextLabel="Build plan"
+        />
+      </div>
+    );
+  }
+
+  const selected = profile[step.key];
+
+  return (
+    <div className="page onboarding-page">
+      <header className="onboarding-top">
+        <BrandMark />
+        <button onClick={skipToPlan}>View plan</button>
+      </header>
+
+      <section className="onboarding-hero reveal" key={step.title}>
+        <span>{step.eyebrow}</span>
+        <h1>{step.title}</h1>
+        <p>{step.copy}</p>
+      </section>
+
+      {step.stat && (
+        <section className="onboarding-stat reveal">
+          <span>{step.stat.label}</span>
+          <strong>{step.stat.value}</strong>
+          <small>{step.stat.detail}</small>
+        </section>
+      )}
+
+      <section className="choice-stack reveal">
+        {step.options.map((option) => {
+          const active = Array.isArray(selected) ? selected.includes(option) : selected === option;
+          return (
+            <button
+              className={`choice-card ${active ? "selected" : ""}`}
+              key={option}
+              onClick={() => updateValue(step.key, option, step.type)}
+            >
+              <span>{option}</span>
+              <i>{active ? <Check size={20} /> : null}</i>
+            </button>
+          );
+        })}
+      </section>
+
+      <OnboardingFooter
+        current={stepIndex + 1}
+        total={onboardingSteps.length + 1}
+        progress={progress}
+        onBack={previousStep}
+        onNext={nextStep}
+        nextLabel="Next"
+      />
+    </div>
+  );
+}
+
+function OnboardingFooter({ current, total, progress, onBack, onNext, nextLabel }) {
+  return (
+    <footer className="onboarding-footer">
+      <div className="onboarding-progress" aria-hidden="true">
+        <i style={{ width: progress }} />
+      </div>
+      <button className="text-action" onClick={onBack}>
+        Back
+      </button>
+      <strong>{current}/{total}</strong>
+      <button className="text-action next" onClick={onNext}>
+        {nextLabel}
+      </button>
+    </footer>
+  );
+}
+
 function BrandMark() {
   return (
     <div className="brand-mark" aria-label="Setline">
@@ -542,6 +791,7 @@ function ErrorState({ message, onRetry }) {
 
 function PlanScreen({
   workoutPlan,
+  onboardingProfile,
   completedSets,
   totalSets,
   progress,
@@ -591,6 +841,17 @@ function PlanScreen({
         <div className="progress-ring" style={{ "--progress": `${progress}%` }}>
           <span>{progress}</span>
         </div>
+      </section>
+
+      <section className="intake-strip reveal">
+        <article>
+          <span>Goal</span>
+          <strong>{onboardingProfile.goal}</strong>
+        </article>
+        <article>
+          <span>Guardrail</span>
+          <strong>{onboardingProfile.mainConcern}</strong>
+        </article>
       </section>
 
       <section className="exercise-list focused-list reveal">

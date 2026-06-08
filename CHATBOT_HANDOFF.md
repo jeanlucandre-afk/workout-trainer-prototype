@@ -171,6 +171,36 @@ The backend/chatbot should treat the frontend as a single-plan executor:
 3. Listen for `setline:session-complete`.
 4. Store or summarize the returned result in the chatbot thread.
 
+The onboarding flow now produces a trainer intake profile before the plan screen. When onboarding is completed, the app publishes:
+
+```js
+window.__SETLINE_ONBOARDING_PROFILE__
+localStorage.getItem("setline.onboardingProfile")
+window.addEventListener("setline:onboarding-complete", (event) => console.log(event.detail))
+```
+
+The profile is currently based on the Andrea Rodriguez case study and includes:
+
+```json
+{
+  "goal": "Lose 8-10 kg while building definition",
+  "timeline": "6 months",
+  "schedule": "3 days/week",
+  "sessionLength": "60-75 min",
+  "trainingStyle": ["Machines", "Dumbbells", "Treadmill walking"],
+  "avoid": ["Jumping", "Sprints", "Deep loaded squats"],
+  "constraints": ["Runner's knee", "Lower-back discomfort", "Desk job"],
+  "baseline": ["Leg press 100 KG x 10", "Hip thrust 70 KG x 10", "RDL 40 KG x 8"],
+  "lifestyle": ["5k steps/day", "6.5h sleep", "Moderate-high stress"],
+  "nutrition": ["Inconsistent protein", "Weekend overeating", "Stress eating"],
+  "motivation": "8/10",
+  "confidence": "6/10",
+  "mainConcern": "Fear of re-injuring knee"
+}
+```
+
+In production, the chatbot should use this profile to generate the structured workout JSON. The prototype still loads a demo plan after onboarding so the flow can be reviewed without a backend.
+
 Good future backend additions:
 
 - Add a stable `exercise.id` for every exercise.
