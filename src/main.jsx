@@ -56,6 +56,9 @@ const onboardingSteps = [
     eyebrow: "Profile",
     title: "Start with the basics",
     copy: "Height, weight, and age help the coach scale exercise selection, volume, and progress targets.",
+    phase: "Body",
+    insight: "Your body profile anchors the first training dose.",
+    tone: "body",
     type: "metrics",
     metrics: [
       { key: "age", label: "Age", unit: "", min: 13, max: 85, step: 1 },
@@ -68,6 +71,9 @@ const onboardingSteps = [
     title: "What are we training for?",
     copy: "Pick the main outcome first. The extra goals help the chatbot choose the right training emphasis.",
     key: "primaryGoal",
+    phase: "Goals",
+    insight: "The main goal decides the plan bias.",
+    tone: "goals",
     type: "single",
     options: ["Lose fat", "Build muscle", "Get stronger", "Improve general fitness"],
   },
@@ -76,6 +82,9 @@ const onboardingSteps = [
     title: "What else matters?",
     copy: "These are the emotional and practical reasons the plan should support beyond the main goal.",
     key: "goalDetails",
+    phase: "Goals",
+    insight: "Motivation turns the plan into something worth repeating.",
+    tone: "goals",
     type: "multi",
     options: [
       "Build muscle definition",
@@ -88,6 +97,9 @@ const onboardingSteps = [
     eyebrow: "Schedule",
     title: "What can fit your real week?",
     copy: "A plan only works if the weekly frequency and session length are realistic.",
+    phase: "Schedule",
+    insight: "A realistic week beats a perfect plan that never happens.",
+    tone: "schedule",
     type: "metrics",
     metrics: [
       { key: "trainingDays", label: "Days/week", unit: "days", min: 1, max: 7, step: 1 },
@@ -99,6 +111,9 @@ const onboardingSteps = [
     title: "What experience do you have?",
     copy: "This controls exercise complexity, starting intensity, and how much explanation the plan needs.",
     key: "experience",
+    phase: "Training",
+    insight: "Experience controls how technical the workout should be.",
+    tone: "training",
     type: "single",
     options: ["Beginner", "Some gym experience", "Consistent for 6+ months", "Advanced"],
   },
@@ -107,6 +122,9 @@ const onboardingSteps = [
     title: "How do you like to train?",
     copy: "Preferences help the chatbot create a plan the person will actually want to repeat.",
     key: "trainingStyle",
+    phase: "Training",
+    insight: "Preference is adherence data.",
+    tone: "training",
     type: "multi",
     options: ["Machines", "Dumbbells", "Barbells", "Bodyweight"],
   },
@@ -115,6 +133,9 @@ const onboardingSteps = [
     title: "Any pain right now?",
     copy: "Current pain changes exercise selection immediately. Select anything the plan should protect.",
     key: "pains",
+    phase: "Guardrails",
+    insight: "Pain notes become exercise filters.",
+    tone: "guardrails",
     type: "multi",
     options: ["No pain", "Knee pain", "Lower back tightness", "Shoulder pain", "Hip pain"],
   },
@@ -123,6 +144,9 @@ const onboardingSteps = [
     title: "Any past injuries?",
     copy: "Past injuries tell the coach where to be conservative and what movements to avoid early.",
     key: "pastInjuries",
+    phase: "Guardrails",
+    insight: "Old injuries shape warmups, tempo, and progression.",
+    tone: "guardrails",
     type: "multi",
     options: ["No major past injury", "Knee injury", "Back injury", "Shoulder injury", "Ankle injury"],
   },
@@ -131,6 +155,9 @@ const onboardingSteps = [
     title: "What should we avoid?",
     copy: "These guardrails keep the plan effective without forcing movements that do not fit your body.",
     key: "movementsToAvoid",
+    phase: "Guardrails",
+    insight: "Avoidance rules make the plan safer, not softer.",
+    tone: "guardrails",
     type: "multi",
     options: ["High-impact jumping", "Running", "Deep loaded squats", "Overhead pressing", "Burpees"],
   },
@@ -139,6 +166,9 @@ const onboardingSteps = [
     title: "What can you train with?",
     copy: "The chatbot should only prescribe equipment you can actually access.",
     key: "equipment",
+    phase: "Setup",
+    insight: "Equipment access decides the exercise library.",
+    tone: "setup",
     type: "multi",
     options: ["Full gym", "Machines", "Dumbbells", "Barbells", "Home only"],
   },
@@ -147,6 +177,9 @@ const onboardingSteps = [
     title: "What affects recovery?",
     copy: "Steps, sleep, stress, and work style decide how aggressive the weekly plan should be.",
     key: "lifestyle",
+    phase: "Recovery",
+    insight: "Recovery decides how hard the first week should push.",
+    tone: "recovery",
     type: "multi",
     options: ["Mostly seated work", "Active job", "Low daily steps", "Moderate stress", "High stress"],
     metrics: [{ key: "sleep", label: "Sleep", unit: "h", min: 4, max: 10, step: 0.5 }],
@@ -155,6 +188,9 @@ const onboardingSteps = [
     eyebrow: "Mindset",
     title: "How ready do you feel?",
     copy: "Motivation and confidence shape the tone, milestones, and how much support the plan should include.",
+    phase: "Mindset",
+    insight: "Readiness sets the coaching tone.",
+    tone: "mindset",
     type: "metrics",
     metrics: [
       { key: "motivation", label: "Motivation", unit: "/10", min: 1, max: 10, step: 1 },
@@ -166,6 +202,9 @@ const onboardingSteps = [
     title: "What should the coach remember?",
     copy: "This gives the chatbot the human reason behind the plan, not only the workout variables.",
     key: "mainConcern",
+    phase: "Mindset",
+    insight: "This becomes the coach note at the top of the plan.",
+    tone: "mindset",
     type: "single",
     options: ["Staying consistent", "Fear of injury", "Gym confidence", "Losing motivation"],
   },
@@ -446,6 +485,12 @@ function App() {
     return () => window.clearInterval(timer);
   }, [screen, restSeconds]);
 
+  useEffect(() => {
+    if (screen !== "onboardingBuild") return undefined;
+    const timeout = window.setTimeout(() => setScreen("plan"), 1150);
+    return () => window.clearTimeout(timeout);
+  }, [screen]);
+
   const nextTarget = useMemo(() => {
     if (activeSet < current.sets.length - 1) {
       return { exercise: activeExercise, set: activeSet + 1 };
@@ -536,7 +581,7 @@ function App() {
       return;
     }
     publishOnboardingProfile(onboardingProfile);
-    setScreen("plan");
+    setScreen("onboardingBuild");
   }
 
   function previousOnboardingStep() {
@@ -566,6 +611,9 @@ function App() {
               previousStep={previousOnboardingStep}
               skipToPlan={() => setScreen("plan")}
             />
+          )}
+          {workoutState.status === "ready" && screen === "onboardingBuild" && (
+            <PlanBuildScreen profile={onboardingProfile} onReady={() => setScreen("plan")} />
           )}
           {workoutState.status === "ready" && screen === "plan" && (
             <PlanScreen
@@ -688,10 +736,12 @@ function OnboardingScreen({
   const step = onboardingSteps[Math.min(stepIndex, onboardingSteps.length - 1)];
   const progress = `${Math.round(((stepIndex + 1) / (onboardingSteps.length + 1)) * 100)}%`;
   const selected = step.key ? profile[step.key] : null;
+  const phaseLabel = isSummary ? "Trainer brief" : step.phase;
+  const completionCount = isSummary ? onboardingSteps.length : stepIndex + 1;
 
   if (isSummary) {
     return (
-      <div className="page onboarding-page">
+      <div className="page onboarding-page onboarding-summary">
         <header className="onboarding-top">
           <BrandMark />
           <button onClick={skipToPlan}>View plan</button>
@@ -733,17 +783,31 @@ function OnboardingScreen({
           onBack={previousStep}
           onNext={nextStep}
           nextLabel="Build plan"
+          phase={phaseLabel}
         />
       </div>
     );
   }
 
   return (
-    <div className="page onboarding-page">
+    <div className={`page onboarding-page onboarding-${step.tone}`}>
       <header className="onboarding-top">
         <BrandMark />
         <button onClick={skipToPlan}>View plan</button>
       </header>
+
+      <section className="profile-builder-card reveal" key={`${step.phase}-${stepIndex}`}>
+        <span>{phaseLabel}</span>
+        <strong>{completionCount}/{onboardingSteps.length} profile blocks</strong>
+        <div className="builder-dots" aria-hidden="true">
+          {onboardingSteps.map((item, index) => (
+            <i
+              className={`${index < completionCount ? "filled" : ""} ${item.phase === step.phase ? "current" : ""}`}
+              key={`${item.phase}-${index}`}
+            />
+          ))}
+        </div>
+      </section>
 
       <section className="onboarding-hero reveal" key={step.title}>
         <span>{step.eyebrow}</span>
@@ -769,6 +833,7 @@ function OnboardingScreen({
           options={step.options}
           selected={selected}
           selectionType={step.type}
+          tone={step.tone}
           onSelect={(option) => updateValue(step.key, option, step.type)}
         />
       )}
@@ -780,10 +845,16 @@ function OnboardingScreen({
             options={step.followUp.options}
             selected={profile[step.followUp.key]}
             selectionType="multi"
+            tone={step.tone}
             onSelect={(option) => updateValue(step.followUp.key, option, "multi")}
           />
         </div>
       )}
+
+      <section className="trainer-insight reveal" key={`${step.title}-insight`}>
+        <span>Trainer insight</span>
+        <p>{step.insight}</p>
+      </section>
 
       <OnboardingFooter
         current={stepIndex + 1}
@@ -792,14 +863,15 @@ function OnboardingScreen({
         onBack={previousStep}
         onNext={nextStep}
         nextLabel="Next"
+        phase={phaseLabel}
       />
     </div>
   );
 }
 
-function ChoiceStack({ options, selected, selectionType, onSelect }) {
+function ChoiceStack({ options, selected, selectionType, tone, onSelect }) {
   return (
-    <section className="choice-stack reveal">
+    <section className={`choice-stack choice-${tone || "default"} reveal`}>
       {options.map((option) => {
         const active = Array.isArray(selected) ? selected.includes(option) : selected === option;
         return (
@@ -814,6 +886,41 @@ function ChoiceStack({ options, selected, selectionType, onSelect }) {
         );
       })}
     </section>
+  );
+}
+
+function PlanBuildScreen({ profile, onReady }) {
+  return (
+    <div className="page build-plan-page">
+      <header className="onboarding-top">
+        <BrandMark />
+        <button onClick={onReady}>Open plan</button>
+      </header>
+
+      <section className="build-orbit reveal" aria-label="Building trainer plan">
+        <div className="build-pulse">
+          <Dumbbell size={38} />
+        </div>
+        <span>Generating trainer plan</span>
+        <h1>Profile locked</h1>
+        <p>{profile.primaryGoal} · {profile.trainingDays} days/week · {profile.mainConcern}</p>
+      </section>
+
+      <section className="build-stack reveal">
+        <article>
+          <i />
+          <span>Goals matched</span>
+        </article>
+        <article>
+          <i />
+          <span>Guardrails applied</span>
+        </article>
+        <article>
+          <i />
+          <span>Workout ready</span>
+        </article>
+      </section>
+    </div>
   );
 }
 
@@ -840,7 +947,7 @@ function listText(items) {
   return items?.length ? items.join(" · ") : "None";
 }
 
-function OnboardingFooter({ current, total, progress, onBack, onNext, nextLabel }) {
+function OnboardingFooter({ current, total, progress, onBack, onNext, nextLabel, phase }) {
   return (
     <footer className="onboarding-footer">
       <div className="onboarding-progress" aria-hidden="true">
@@ -849,7 +956,10 @@ function OnboardingFooter({ current, total, progress, onBack, onNext, nextLabel 
       <button className="text-action" onClick={onBack}>
         Back
       </button>
-      <strong>{current}/{total}</strong>
+      <strong>
+        <span>{phase}</span>
+        {current}/{total}
+      </strong>
       <button className="text-action next" onClick={onNext}>
         {nextLabel}
       </button>
