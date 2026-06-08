@@ -795,7 +795,6 @@ function OnboardingScreen({
       </header>
 
       <section className="profile-builder-card reveal" key={`${step.phase}-${stepIndex}`}>
-        <span>{phaseLabel}</span>
         <strong>
           {phaseStepNumber}/{phaseSteps.length} {phaseBlockName} {phaseBlockLabel}
         </strong>
