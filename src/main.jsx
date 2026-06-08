@@ -425,10 +425,27 @@ function WorkoutScreen({
   setScreen,
 }) {
   const [summaryOpen, setSummaryOpen] = useState(false);
+  const [logFeedback, setLogFeedback] = useState(false);
+  const logTimeoutRef = useRef(null);
   const exerciseCompletedSets = current.sets.filter((_, setIndex) => completed[`${activeExercise}-${setIndex}`]).length;
   const restMinutes = Math.floor(restSeconds / 60).toString().padStart(2, "0");
   const restRemainder = (restSeconds % 60).toString().padStart(2, "0");
   const setLabel = `${activeSet + 1}/${current.sets.length}`;
+
+  useEffect(() => {
+    setLogFeedback(false);
+    window.clearTimeout(logTimeoutRef.current);
+  }, [activeExercise, activeSet, editingMode]);
+
+  useEffect(() => () => window.clearTimeout(logTimeoutRef.current), []);
+
+  function handleLogSet() {
+    if (editingMode || logFeedback) {
+      return;
+    }
+    setLogFeedback(true);
+    logTimeoutRef.current = window.setTimeout(logSet, 170);
+  }
 
   return (
     <div className={`page workout-page ${editingMode ? "editing-mode" : ""}`}>
@@ -501,8 +518,11 @@ function WorkoutScreen({
         />
       </section>
 
-      <button className="primary-action sticky-action" onClick={editingMode ? onSaveEdit : logSet}>
-        {editingMode ? "SAVE SET" : "LOG SET"}
+      <button
+        className={`primary-action sticky-action ${logFeedback ? "is-logging" : ""}`}
+        onClick={editingMode ? onSaveEdit : handleLogSet}
+      >
+        {editingMode ? "SAVE SET" : logFeedback ? "SET LOGGED" : "LOG SET"}
       </button>
 
       {summaryOpen && (
