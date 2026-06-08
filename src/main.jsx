@@ -29,8 +29,7 @@ const workoutPlan = {
       cue: "Feet mid-platform. Control the bottom. Do not lock out hard.",
       muscle: "Legs",
       rest: 90,
-      image:
-        "https://images.unsplash.com/photo-1534367507873-d2d7e24c797f?auto=format&fit=crop&w=900&q=80",
+      image: "/exercises/leg-press.png",
     },
     {
       name: "Hamstring Curl",
@@ -42,8 +41,7 @@ const workoutPlan = {
       cue: "Squeeze the pad down. Pause for one count at the bottom.",
       muscle: "Hamstrings",
       rest: 75,
-      image:
-        "https://images.unsplash.com/photo-1599058917212-d750089bc07e?auto=format&fit=crop&w=900&q=80",
+      image: "/exercises/hamstring-curl.png",
     },
     {
       name: "Cable Crunch",
@@ -55,8 +53,7 @@ const workoutPlan = {
       cue: "Ribs down. Curl through the spine instead of pulling with arms.",
       muscle: "Core",
       rest: 60,
-      image:
-        "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=900&q=80",
+      image: "/exercises/cable-crunch.png",
     },
   ],
 };
