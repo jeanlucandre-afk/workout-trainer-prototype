@@ -737,7 +737,11 @@ function OnboardingScreen({
   const progress = `${Math.round(((stepIndex + 1) / (onboardingSteps.length + 1)) * 100)}%`;
   const selected = step.key ? profile[step.key] : null;
   const phaseLabel = isSummary ? "Trainer brief" : step.phase;
-  const completionCount = isSummary ? onboardingSteps.length : stepIndex + 1;
+  const phaseSteps = onboardingSteps.filter((item) => item.phase === step.phase);
+  const phaseStepIndex = phaseSteps.findIndex((item) => item === step);
+  const phaseStepNumber = Math.max(1, phaseStepIndex + 1);
+  const phaseBlockLabel = phaseSteps.length === 1 ? "block" : "blocks";
+  const phaseBlockName = phaseLabel.toLowerCase().replace(/s$/, "");
 
   if (isSummary) {
     return (
@@ -798,11 +802,17 @@ function OnboardingScreen({
 
       <section className="profile-builder-card reveal" key={`${step.phase}-${stepIndex}`}>
         <span>{phaseLabel}</span>
-        <strong>{completionCount}/{onboardingSteps.length} profile blocks</strong>
-        <div className="builder-dots" aria-hidden="true">
-          {onboardingSteps.map((item, index) => (
+        <strong>
+          {phaseStepNumber}/{phaseSteps.length} {phaseBlockName} {phaseBlockLabel}
+        </strong>
+        <div
+          className="builder-dots"
+          style={{ gridTemplateColumns: `repeat(${phaseSteps.length}, 1fr)` }}
+          aria-hidden="true"
+        >
+          {phaseSteps.map((item, index) => (
             <i
-              className={`${index < completionCount ? "filled" : ""} ${item.phase === step.phase ? "current" : ""}`}
+              className={`${index < phaseStepNumber ? "filled" : ""} ${index + 1 === phaseStepNumber ? "current" : ""}`}
               key={`${item.phase}-${index}`}
             />
           ))}
