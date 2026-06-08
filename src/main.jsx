@@ -32,23 +32,23 @@ const onboardingDefaults = {
   age: 28,
   height: 175,
   weight: 78,
-  primaryGoal: "Lose fat",
-  goalDetails: ["Build muscle definition", "Improve energy", "Feel confident in the gym"],
-  timeline: "3-6 months",
+  primaryGoal: "",
+  goalDetails: [],
+  timeline: "",
   trainingDays: 3,
   sessionLength: 60,
-  experience: "Some gym experience",
-  trainingStyle: ["Machines", "Dumbbells"],
-  cardioPreference: "Incline walking or cycling",
-  pains: ["Lower back tightness"],
-  pastInjuries: ["No major past injury"],
-  movementsToAvoid: ["High-impact jumping"],
-  equipment: ["Full gym", "Machines", "Dumbbells"],
-  lifestyle: ["Mostly seated work", "Moderate stress"],
+  experience: "",
+  trainingStyle: [],
+  cardioPreference: "",
+  pains: [],
+  pastInjuries: [],
+  movementsToAvoid: [],
+  equipment: [],
+  lifestyle: [],
   sleep: 7,
   motivation: 8,
   confidence: 6,
-  mainConcern: "Staying consistent",
+  mainConcern: "",
 };
 
 const onboardingSteps = [
@@ -755,7 +755,7 @@ function OnboardingScreen({
         <section className="brief-card reveal">
           <article>
             <span>Goal</span>
-            <strong>{profile.primaryGoal} · {listText(profile.goalDetails)}</strong>
+            <strong>{joinText([profile.primaryGoal, ...profile.goalDetails])}</strong>
           </article>
           <article>
             <span>Body profile</span>
@@ -771,7 +771,7 @@ function OnboardingScreen({
           </article>
           <article>
             <span>Mindset</span>
-            <strong>{profile.mainConcern} · Motivation {profile.motivation}/10 · Confidence {profile.confidence}/10</strong>
+            <strong>{joinText([profile.mainConcern, `Motivation ${profile.motivation}/10`, `Confidence ${profile.confidence}/10`])}</strong>
           </article>
         </section>
 
@@ -943,7 +943,11 @@ function OnboardingMetric({ metric, value, updateMetric }) {
 }
 
 function listText(items) {
-  return items?.length ? items.join(" · ") : "None";
+  return items?.filter(Boolean).length ? items.filter(Boolean).join(" · ") : "None";
+}
+
+function joinText(items) {
+  return listText(items);
 }
 
 function OnboardingFooter({ current, total, progress, onBack, onNext, nextLabel, phase }) {
@@ -1090,7 +1094,7 @@ function PlanScreen({
       <section className="intake-strip reveal">
         <article>
           <span>Goal</span>
-          <strong>{onboardingProfile.primaryGoal} · {onboardingProfile.trainingDays} days/week</strong>
+          <strong>{joinText([onboardingProfile.primaryGoal, `${onboardingProfile.trainingDays} days/week`])}</strong>
         </article>
         <article>
           <span>Guardrail</span>
