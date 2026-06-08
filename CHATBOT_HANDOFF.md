@@ -179,7 +179,7 @@ localStorage.getItem("setline.onboardingProfile")
 window.addEventListener("setline:onboarding-complete", (event) => console.log(event.detail))
 ```
 
-The profile is generic and intended to work for any person. It includes body metrics, goals, schedule, pain/injury constraints, equipment access, lifestyle, nutrition, and motivation:
+The profile is generic and intended to work for any person. It includes body metrics, goals, schedule, pain/injury constraints, equipment access, lifestyle, and motivation:
 
 ```json
 {
@@ -200,7 +200,6 @@ The profile is generic and intended to work for any person. It includes body met
   "equipment": ["Full gym", "Machines", "Dumbbells"],
   "lifestyle": ["Mostly seated work", "Moderate stress"],
   "sleep": 7,
-  "nutrition": ["Wants higher protein", "Needs simple meals"],
   "motivation": 8,
   "confidence": 6,
   "mainConcern": "Staying consistent"

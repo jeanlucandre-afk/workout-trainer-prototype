@@ -46,7 +46,6 @@ const onboardingDefaults = {
   equipment: ["Full gym", "Machines", "Dumbbells"],
   lifestyle: ["Mostly seated work", "Moderate stress"],
   sleep: 7,
-  nutrition: ["Wants higher protein", "Needs simple meals"],
   motivation: 8,
   confidence: 6,
   mainConcern: "Staying consistent",
@@ -151,14 +150,6 @@ const onboardingSteps = [
     type: "multi",
     options: ["Mostly seated work", "Active job", "Low daily steps", "Moderate stress", "High stress"],
     metrics: [{ key: "sleep", label: "Sleep", unit: "h", min: 4, max: 10, step: 0.5 }],
-  },
-  {
-    eyebrow: "Nutrition",
-    title: "What should nutrition support?",
-    copy: "The workout can stay simple, but the plan should know the biggest nutrition constraint.",
-    key: "nutrition",
-    type: "multi",
-    options: ["Wants higher protein", "Needs simple meals", "Stress eating", "Weekend overeating", "No nutrition focus"],
   },
   {
     eyebrow: "Mindset",
