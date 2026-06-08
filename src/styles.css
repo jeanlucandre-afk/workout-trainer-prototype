@@ -173,6 +173,40 @@ button {
   font-weight: 700;
 }
 
+.plan-stat-strip {
+  margin: 0 0 16px;
+  display: grid;
+  grid-template-columns: 1fr 1.18fr 1fr;
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: var(--line);
+}
+
+.plan-stat-strip article {
+  min-width: 0;
+  padding: 15px 13px;
+  background: #141415;
+}
+
+.plan-stat-strip span {
+  display: block;
+  color: var(--dim);
+  font-size: 10px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.plan-stat-strip strong {
+  display: block;
+  margin-top: 7px;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 1000;
+  white-space: nowrap;
+}
+
 .video-placeholder {
   min-height: 220px;
   margin: 28px 0 14px;
@@ -977,6 +1011,32 @@ button {
 .workout-header > span {
   color: var(--muted);
   font-weight: 900;
+}
+
+.workout-context {
+  margin: 14px 18px 12px;
+  padding: 12px 14px;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.workout-context span,
+.workout-context small {
+  color: var(--dim);
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.workout-context strong {
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 1000;
+  text-transform: uppercase;
 }
 
 .edit-status {

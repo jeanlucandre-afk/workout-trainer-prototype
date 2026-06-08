@@ -284,6 +284,7 @@ function PlanScreen({
   startWorkout,
 }) {
   const [expandedExercise, setExpandedExercise] = useState(-1);
+  const averageRest = Math.round(restDurations.reduce((sum, rest) => sum + rest, 0) / restDurations.length);
 
   return (
     <div className="page single-plan-page">
@@ -296,6 +297,21 @@ function PlanScreen({
         <span>{workoutPlan.focus}</span>
         <h1>{workoutPlan.title}</h1>
         <p>{workoutPlan.duration} · {workoutPlan.exercises.length} exercises · {totalSets} sets</p>
+      </section>
+
+      <section className="plan-stat-strip reveal" aria-label="Workout plan stats">
+        <article>
+          <span>Time</span>
+          <strong>{workoutPlan.duration}</strong>
+        </article>
+        <article>
+          <span>Work</span>
+          <strong>{workoutPlan.exercises.length} moves</strong>
+        </article>
+        <article>
+          <span>Rest</span>
+          <strong>{averageRest}s avg</strong>
+        </article>
       </section>
 
       <section className="hero-card compact-card reveal">
@@ -412,6 +428,7 @@ function WorkoutScreen({
   const exerciseCompletedSets = current.sets.filter((_, setIndex) => completed[`${activeExercise}-${setIndex}`]).length;
   const restMinutes = Math.floor(restSeconds / 60).toString().padStart(2, "0");
   const restRemainder = (restSeconds % 60).toString().padStart(2, "0");
+  const setLabel = `${activeSet + 1}/${current.sets.length}`;
 
   return (
     <div className={`page workout-page ${editingMode ? "editing-mode" : ""}`}>
@@ -428,6 +445,12 @@ function WorkoutScreen({
         </button>
         <span>{activeExercise + 1}/{workoutPlan.exercises.length}</span>
       </header>
+
+      <section className="workout-context" aria-label="Current workout progress">
+        <span>{current.muscle}</span>
+        <strong>Set {setLabel}</strong>
+        <small>{completedSets}/{totalSets} logged</small>
+      </section>
 
       {editingMode && (
         <div className="edit-status">
