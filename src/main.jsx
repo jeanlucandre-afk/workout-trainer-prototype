@@ -12,7 +12,19 @@ import {
 } from "lucide-react";
 import "./styles.css";
 
-const workoutPlan = {
+const exerciseImageMap = {
+  "leg press": "/exercises/leg-press.png",
+  "hamstring curl": "/exercises/hamstring-curl.png",
+  "seated hamstring curl": "/exercises/hamstring-curl.png",
+  "lying hamstring curl": "/exercises/hamstring-curl.png",
+  "leg curl": "/exercises/hamstring-curl.png",
+  "cable crunch": "/exercises/cable-crunch.png",
+  "kneeling cable crunch": "/exercises/cable-crunch.png",
+};
+
+const fallbackExerciseImage = "/exercises/exercise-placeholder.svg";
+
+const demoWorkoutPlan = {
   title: "Lower body + core",
   source: "AI generated plan",
   duration: "58 min",
@@ -58,25 +70,210 @@ const workoutPlan = {
   ],
 };
 
+function matchExerciseImage(name, providedImage) {
+  if (providedImage) return providedImage;
+  const normalizedName = String(name || "").trim().toLowerCase();
+  return exerciseImageMap[normalizedName] || fallbackExerciseImage;
+}
+
+function normalizeWorkoutPlan(input) {
+  if (!input || typeof input !== "object") {
+    throw new Error("Workout payload is missing.");
+  }
+
+  const exercises = Array.isArray(input.exercises)
+    ? input.exercises
+        .map((exercise, exerciseIndex) => {
+          const sets = Array.isArray(exercise.sets)
+            ? exercise.sets
+                .map((set) => ({
+                  reps: Math.max(0, Number(set.reps) || 0),
+                  weight: Math.max(0, Number(set.weight) || 0),
+                }))
+                .filter((set) => set.reps > 0)
+            : [];
+
+          if (!exercise.name || sets.length === 0) return null;
+
+          return {
+            name: String(exercise.name),
+            muscle: String(exercise.muscle || exercise.group || "Training"),
+            cue: String(exercise.cue || exercise.notes || "Controlled reps. Keep the movement clean."),
+            rest: Math.max(15, Number(exercise.rest) || Number(input.defaultRest) || 75),
+            sets,
+            image: matchExerciseImage(exercise.name, exercise.image),
+            sourceId: exercise.id || `exercise-${exerciseIndex + 1}`,
+          };
+        })
+        .filter(Boolean)
+    : [];
+
+  if (exercises.length === 0) {
+    return null;
+  }
+
+  return {
+    title: String(input.title || "AI workout"),
+    source: String(input.source || "AI generated plan"),
+    duration: String(input.duration || `${Math.max(20, exercises.length * 14)} min`),
+    focus: String(input.focus || "Generated session"),
+    note: String(input.note || "Review the plan, adjust sets, then start when ready."),
+    chatbotRequestId: input.chatbotRequestId || input.id || "demo-workout",
+    exercises,
+  };
+}
+
+function loadWorkoutPayload() {
+  if (typeof window === "undefined") return normalizeWorkoutPlan(demoWorkoutPlan);
+
+  const globalPayload = window.__SETLINE_WORKOUT__;
+  if (globalPayload) return normalizeWorkoutPlan(globalPayload);
+
+  const savedPayload = window.localStorage.getItem("setline.workoutPlan");
+  if (savedPayload) return normalizeWorkoutPlan(JSON.parse(savedPayload));
+
+  return normalizeWorkoutPlan(demoWorkoutPlan);
+}
+
+function createSessionResult({ workoutPlan, sessionLog, completed, restDurations }) {
+  const exercises = workoutPlan.exercises.map((exercise, exerciseIndex) => {
+    const sets = sessionLog[exerciseIndex].map((set, setIndex) => ({
+      set: setIndex + 1,
+      plannedReps: exercise.sets[setIndex]?.reps ?? set.reps,
+      plannedWeight: exercise.sets[setIndex]?.weight ?? set.weight,
+      reps: set.reps,
+      weight: set.weight,
+      completed: Boolean(completed[`${exerciseIndex}-${setIndex}`]),
+    }));
+
+    return {
+      name: exercise.name,
+      muscle: exercise.muscle,
+      rest: restDurations[exerciseIndex],
+      completedSets: sets.filter((set) => set.completed).length,
+      totalSets: sets.length,
+      volume: sets.reduce((sum, set) => sum + (set.completed ? set.reps * set.weight : 0), 0),
+      sets,
+    };
+  });
+
+  return {
+    workoutId: workoutPlan.chatbotRequestId,
+    title: workoutPlan.title,
+    completedAt: new Date().toISOString(),
+    completedSets: exercises.reduce((sum, exercise) => sum + exercise.completedSets, 0),
+    totalSets: exercises.reduce((sum, exercise) => sum + exercise.totalSets, 0),
+    totalVolume: exercises.reduce((sum, exercise) => sum + exercise.volume, 0),
+    exercises,
+  };
+}
+
+function publishSessionResult(result) {
+  if (typeof window === "undefined") return;
+  window.__SETLINE_SESSION_RESULT__ = result;
+  window.localStorage.setItem("setline.sessionResult", JSON.stringify(result));
+  window.dispatchEvent(new CustomEvent("setline:session-complete", { detail: result }));
+}
+
 function App() {
   const screenRef = useRef(null);
+  const [workoutState, setWorkoutState] = useState({ status: "loading", workoutPlan: null, error: "" });
   const [screen, setScreen] = useState("plan");
   const [activeExercise, setActiveExercise] = useState(0);
   const [activeSet, setActiveSet] = useState(0);
   const [completed, setCompleted] = useState({});
   const [restSeconds, setRestSeconds] = useState(0);
   const [editReturnScreen, setEditReturnScreen] = useState("rest");
-  const [restDurations, setRestDurations] = useState(() =>
-    workoutPlan.exercises.map((exercise) => exercise.rest),
-  );
-  const [sessionLog, setSessionLog] = useState(() =>
-    workoutPlan.exercises.map((exercise) => exercise.sets.map((set) => ({ ...set }))),
-  );
+  const [restDurations, setRestDurations] = useState([]);
+  const [sessionLog, setSessionLog] = useState([]);
+  const [sessionResult, setSessionResult] = useState(null);
 
-  const current = workoutPlan.exercises[activeExercise];
-  const currentSet = sessionLog[activeExercise][activeSet];
-  const currentRest = restDurations[activeExercise];
-  const totalSets = workoutPlan.exercises.reduce((sum, exercise) => sum + exercise.sets.length, 0);
+  const workoutPlan = workoutState.workoutPlan;
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      try {
+        const loadedPlan = loadWorkoutPayload();
+        if (!loadedPlan) {
+          setWorkoutState({ status: "empty", workoutPlan: null, error: "" });
+          return;
+        }
+        setWorkoutState({ status: "ready", workoutPlan: loadedPlan, error: "" });
+        setRestDurations(loadedPlan.exercises.map((exercise) => exercise.rest));
+        setSessionLog(loadedPlan.exercises.map((exercise) => exercise.sets.map((set) => ({ ...set }))));
+      } catch (error) {
+        setWorkoutState({
+          status: "error",
+          workoutPlan: null,
+          error: error instanceof Error ? error.message : "Could not load workout.",
+        });
+      }
+    }, 260);
+
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    function applyIncomingWorkout(payload) {
+      try {
+        const loadedPlan = normalizeWorkoutPlan(payload);
+        if (!loadedPlan) {
+          setWorkoutState({ status: "empty", workoutPlan: null, error: "" });
+          return;
+        }
+        setWorkoutState({ status: "ready", workoutPlan: loadedPlan, error: "" });
+        setRestDurations(loadedPlan.exercises.map((exercise) => exercise.rest));
+        setSessionLog(loadedPlan.exercises.map((exercise) => exercise.sets.map((set) => ({ ...set }))));
+        setCompleted({});
+        setSessionResult(null);
+        setActiveExercise(0);
+        setActiveSet(0);
+        setScreen("plan");
+      } catch (error) {
+        setWorkoutState({
+          status: "error",
+          workoutPlan: null,
+          error: error instanceof Error ? error.message : "Could not load workout.",
+        });
+      }
+    }
+
+    function handleWorkoutEvent(event) {
+      applyIncomingWorkout(event.detail);
+    }
+
+    function handleWorkoutMessage(event) {
+      if (event.data?.type === "setline:workout") {
+        applyIncomingWorkout(event.data.payload);
+      }
+    }
+
+    window.addEventListener("setline:workout", handleWorkoutEvent);
+    window.addEventListener("message", handleWorkoutMessage);
+
+    return () => {
+      window.removeEventListener("setline:workout", handleWorkoutEvent);
+      window.removeEventListener("message", handleWorkoutMessage);
+    };
+  }, []);
+
+  function resetToDemoWorkout() {
+    const loadedPlan = normalizeWorkoutPlan(demoWorkoutPlan);
+    setWorkoutState({ status: "ready", workoutPlan: loadedPlan, error: "" });
+    setRestDurations(loadedPlan.exercises.map((exercise) => exercise.rest));
+    setSessionLog(loadedPlan.exercises.map((exercise) => exercise.sets.map((set) => ({ ...set }))));
+    setCompleted({});
+    setSessionResult(null);
+    setActiveExercise(0);
+    setActiveSet(0);
+    setScreen("plan");
+  }
+
+  const displayedPlan = workoutPlan || normalizeWorkoutPlan(demoWorkoutPlan);
+  const current = displayedPlan.exercises[activeExercise];
+  const currentSet = sessionLog[activeExercise]?.[activeSet] || current.sets[activeSet];
+  const currentRest = restDurations[activeExercise] ?? current.rest;
+  const totalSets = displayedPlan.exercises.reduce((sum, exercise) => sum + exercise.sets.length, 0);
   const completedSets = Object.keys(completed).length;
   const progress = Math.round((completedSets / totalSets) * 100);
   const allDone = completedSets === totalSets;
@@ -97,11 +294,11 @@ function App() {
     if (activeSet < current.sets.length - 1) {
       return { exercise: activeExercise, set: activeSet + 1 };
     }
-    if (activeExercise < workoutPlan.exercises.length - 1) {
+    if (activeExercise < displayedPlan.exercises.length - 1) {
       return { exercise: activeExercise + 1, set: 0 };
     }
     return null;
-  }, [activeExercise, activeSet, current.sets.length]);
+  }, [activeExercise, activeSet, current.sets.length, displayedPlan.exercises.length]);
 
   function updateSet(field, delta) {
     updatePlannedSet(activeExercise, activeSet, field, delta);
@@ -145,6 +342,9 @@ function App() {
 
   function continueAfterRest() {
     if (!nextTarget) {
+      const result = createSessionResult({ workoutPlan: displayedPlan, sessionLog, completed, restDurations });
+      setSessionResult(result);
+      publishSessionResult(result);
       setScreen("complete");
       return;
     }
@@ -157,8 +357,14 @@ function App() {
     <main className="app-shell">
       <div className="phone-frame">
         <section ref={screenRef} className={`screen focused-screen screen-${screen}`}>
-          {screen === "plan" && (
+          {workoutState.status === "loading" && <LoadingState />}
+          {workoutState.status === "error" && (
+            <ErrorState message={workoutState.error} onRetry={resetToDemoWorkout} />
+          )}
+          {workoutState.status === "empty" && <EmptyState onLoadDemo={resetToDemoWorkout} />}
+          {workoutState.status === "ready" && screen === "plan" && (
             <PlanScreen
+              workoutPlan={displayedPlan}
               completedSets={completedSets}
               totalSets={totalSets}
               progress={progress}
@@ -169,8 +375,9 @@ function App() {
               startWorkout={startWorkout}
             />
           )}
-          {screen === "workout" && (
+          {workoutState.status === "ready" && screen === "workout" && (
             <WorkoutScreen
+              workoutPlan={displayedPlan}
               current={current}
               currentSet={currentSet}
               activeExercise={activeExercise}
@@ -185,8 +392,9 @@ function App() {
               setScreen={setScreen}
             />
           )}
-          {screen === "rest" && (
+          {workoutState.status === "ready" && screen === "rest" && (
             <RestScreen
+              workoutPlan={displayedPlan}
               current={current}
               activeExercise={activeExercise}
               activeSet={activeSet}
@@ -205,8 +413,9 @@ function App() {
               setScreen={setScreen}
             />
           )}
-          {screen === "restEdit" && (
+          {workoutState.status === "ready" && screen === "restEdit" && (
             <WorkoutScreen
+              workoutPlan={displayedPlan}
               current={current}
               currentSet={currentSet}
               activeExercise={activeExercise}
@@ -224,8 +433,9 @@ function App() {
               setScreen={setScreen}
             />
           )}
-          {screen === "exerciseDone" && (
+          {workoutState.status === "ready" && screen === "exerciseDone" && (
             <ExerciseDoneScreen
+              workoutPlan={displayedPlan}
               current={current}
               activeExercise={activeExercise}
               activeSet={activeSet}
@@ -244,8 +454,9 @@ function App() {
               setScreen={setScreen}
             />
           )}
-          {screen === "complete" && (
+          {workoutState.status === "ready" && screen === "complete" && (
             <CompleteScreen
+              sessionResult={sessionResult}
               completedSets={completedSets}
               totalSets={totalSets}
               startWorkout={startWorkout}
@@ -266,7 +477,67 @@ function BrandMark() {
   );
 }
 
+function LoadingState() {
+  return (
+    <div className="page integration-state">
+      <header className="top-row plan-top-row">
+        <BrandMark />
+        <div className="plan-chip">Loading</div>
+      </header>
+      <section className="integration-panel reveal">
+        <span>Chatbot handoff</span>
+        <h1>Building workout</h1>
+        <p>Reading the structured plan and preparing the gym view.</p>
+        <div className="skeleton-stack" aria-hidden="true">
+          <i />
+          <i />
+          <i />
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function EmptyState({ onLoadDemo }) {
+  return (
+    <div className="page integration-state">
+      <header className="top-row plan-top-row">
+        <BrandMark />
+        <div className="plan-chip">No plan</div>
+      </header>
+      <section className="integration-panel reveal">
+        <span>Waiting for workout</span>
+        <h1>No plan yet</h1>
+        <p>The chatbot can send a workout JSON payload when it is ready.</p>
+        <button className="primary-action" onClick={onLoadDemo}>
+          LOAD DEMO PLAN
+        </button>
+      </section>
+    </div>
+  );
+}
+
+function ErrorState({ message, onRetry }) {
+  return (
+    <div className="page integration-state">
+      <header className="top-row plan-top-row">
+        <BrandMark />
+        <div className="plan-chip">Error</div>
+      </header>
+      <section className="integration-panel reveal">
+        <span>Workout import failed</span>
+        <h1>Check payload</h1>
+        <p>{message || "The chatbot response could not be converted into a workout."}</p>
+        <button className="primary-action" onClick={onRetry}>
+          LOAD DEMO PLAN
+        </button>
+      </section>
+    </div>
+  );
+}
+
 function PlanScreen({
+  workoutPlan,
   completedSets,
   totalSets,
   progress,
@@ -400,6 +671,7 @@ function PlanScreen({
 }
 
 function WorkoutScreen({
+  workoutPlan,
   current,
   currentSet,
   activeExercise,
@@ -519,6 +791,7 @@ function WorkoutScreen({
 
       {summaryOpen && (
         <WorkoutSummarySheet
+          workoutPlan={workoutPlan}
           activeExercise={activeExercise}
           activeSet={activeSet}
           completedSets={completedSets}
@@ -533,6 +806,7 @@ function WorkoutScreen({
 }
 
 function WorkoutSummarySheet({
+  workoutPlan,
   activeExercise,
   activeSet,
   completedSets,
@@ -717,6 +991,7 @@ function MiniStepper({ label, value, unit, onMinus, onPlus }) {
 }
 
 function RestScreen({
+  workoutPlan,
   current,
   activeExercise,
   activeSet,
@@ -775,6 +1050,7 @@ function RestScreen({
 
       {summaryOpen && (
         <WorkoutSummarySheet
+          workoutPlan={workoutPlan}
           activeExercise={activeExercise}
           activeSet={activeSet}
           completedSets={completedSets}
@@ -789,6 +1065,7 @@ function RestScreen({
 }
 
 function ExerciseDoneScreen({
+  workoutPlan,
   current,
   activeExercise,
   activeSet,
@@ -859,6 +1136,7 @@ function ExerciseDoneScreen({
 
       {summaryOpen && (
         <WorkoutSummarySheet
+          workoutPlan={workoutPlan}
           activeExercise={activeExercise}
           activeSet={activeSet}
           completedSets={completedSets}
@@ -877,7 +1155,7 @@ function sessionLabel(exercise, setIndex) {
   return `${set.reps} reps · ${set.weight || "BW"}${set.weight ? "kg" : ""}`;
 }
 
-function CompleteScreen({ completedSets, totalSets, startWorkout }) {
+function CompleteScreen({ sessionResult, completedSets, totalSets, startWorkout }) {
   return (
     <div className="page complete-page">
       <header className="top-row">
@@ -892,6 +1170,19 @@ function CompleteScreen({ completedSets, totalSets, startWorkout }) {
         <h1>{completedSets}/{totalSets}</h1>
         <p>All planned sets are logged. The chatbot can now summarize progress.</p>
       </section>
+      {sessionResult && (
+        <section className="result-card reveal" aria-label="Session result sent to chatbot">
+          <span>Result object ready</span>
+          <div>
+            <strong>{sessionResult.totalVolume.toLocaleString()}</strong>
+            <small>Total volume</small>
+          </div>
+          <div>
+            <strong>{sessionResult.completedSets}/{sessionResult.totalSets}</strong>
+            <small>Logged sets</small>
+          </div>
+        </section>
+      )}
       <button className="primary-action sticky-action" onClick={() => startWorkout(0)}>
         REVIEW PLAN
       </button>

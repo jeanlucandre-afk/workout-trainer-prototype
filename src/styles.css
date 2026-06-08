@@ -212,6 +212,72 @@ button {
   white-space: nowrap;
 }
 
+.integration-state {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.integration-panel {
+  flex: 1;
+  display: grid;
+  align-content: center;
+  gap: 18px;
+  padding-bottom: 84px;
+}
+
+.integration-panel > span,
+.result-card > span {
+  color: var(--dim);
+  font-size: 13px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.integration-panel h1 {
+  max-width: 340px;
+  margin: 0;
+  font-size: 48px;
+  line-height: 0.94;
+  font-weight: 1000;
+  text-transform: uppercase;
+}
+
+.integration-panel p {
+  max-width: 310px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.35;
+}
+
+.integration-panel .primary-action {
+  margin-top: 12px;
+}
+
+.skeleton-stack {
+  display: grid;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.skeleton-stack i {
+  height: 72px;
+  border-radius: 24px;
+  background:
+    linear-gradient(90deg, #141416, #252529, #141416);
+  background-size: 220% 100%;
+  animation: skeletonSweep 1200ms linear infinite;
+}
+
+.skeleton-stack i:nth-child(2) {
+  width: 88%;
+}
+
+.skeleton-stack i:nth-child(3) {
+  width: 74%;
+}
+
 .video-placeholder {
   min-height: 220px;
   margin: 28px 0 14px;
@@ -1436,6 +1502,45 @@ button {
   font-size: 20px;
 }
 
+.result-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 0 0 18px;
+  padding: 18px;
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+}
+
+.result-card > span {
+  grid-column: 1 / -1;
+}
+
+.result-card div {
+  padding: 16px;
+  border-radius: 22px;
+  background: #111112;
+}
+
+.result-card strong,
+.result-card small {
+  display: block;
+}
+
+.result-card strong {
+  font-size: 24px;
+  line-height: 1;
+  font-weight: 1000;
+}
+
+.result-card small {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
 .progress-page,
 .create-page,
 .profile-page {
@@ -1708,6 +1813,15 @@ button {
   100% {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+@keyframes skeletonSweep {
+  from {
+    background-position: 120% 0;
+  }
+  to {
+    background-position: -120% 0;
   }
 }
 
