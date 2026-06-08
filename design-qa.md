@@ -7,7 +7,7 @@
   - `/Users/jean-luc1515/Downloads/IMG_9459.PNG`
   - `/Users/jean-luc1515/Downloads/IMG_9460.PNG`
   - `/Users/jean-luc1515/Downloads/IMG_9461.PNG`
-- Updated brief: minor polish pass for plan spacing, rest-time edit behavior, and restrained success accent styling.
+- Updated brief: minor polish pass for plan spacing and rest-time edit behavior.
 
 **Implementation Evidence**
 - Local URL: `http://127.0.0.1:5173/`
@@ -15,23 +15,18 @@
 - Plan spacing screenshot: `/Users/jean-luc1515/workout-trainer-prototype/qa-polish-plan-spacing.png`
 - Rest edit mode screenshot: `/Users/jean-luc1515/workout-trainer-prototype/qa-polish-edit-mode.png`
 - Rest return screenshot: `/Users/jean-luc1515/workout-trainer-prototype/qa-polish-rest-after-save.png`
-- Soft edit accent screenshot: `/Users/jean-luc1515/workout-trainer-prototype/qa-soft-edit.png`
-- Soft exercise-complete screenshot: `/Users/jean-luc1515/workout-trainer-prototype/qa-soft-check.png`
-- Soft timer accent screenshot: `/Users/jean-luc1515/workout-trainer-prototype/qa-soft-timer.png`
 
 **Full-View Comparison Evidence**
 - Added spacing between the plan metadata line and the session card.
 - `EDIT SET` during rest now opens a distinct green-tinted edit mode rather than the normal working-set screen.
 - Rest timer continues while editing, shown in the edit banner as `Editing Set` with the live countdown.
 - `SAVE SET` returns to the rest timer without resetting the time.
-- Green is now used consistently as a soft success/status accent on the timer, completed set dots, edit banner, and completion check instead of filling major controls.
 
 **Focused Region Comparison Evidence**
 - Spacing: the gray metadata and session card now have a more comfortable gap.
-- Edit affordance: editing state uses soft green border/tint and animated status banner while keeping the save action in the primary white style.
+- Edit affordance: editing state uses green border/tint, animated status banner, and green save action.
 - Timer behavior: rest countdown moved from `01:29` to `01:28` while editing and remained `01:28` after saving.
 - Numeric alignment: weight/reps remain centered in edit controls.
-- Completion state: exercise-finished check is white with a soft green success mark, preserving the black/white minimalist base.
 
 **Verification**
 - `npm run build` passed.
