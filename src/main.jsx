@@ -587,9 +587,7 @@ function App() {
   function previousOnboardingStep() {
     if (onboardingStep > 0) {
       setOnboardingStep((value) => value - 1);
-      return;
     }
-    setScreen("plan");
   }
 
   return (
@@ -609,7 +607,6 @@ function App() {
               updateMetric={updateOnboardingMetric}
               nextStep={nextOnboardingStep}
               previousStep={previousOnboardingStep}
-              skipToPlan={() => setScreen("plan")}
             />
           )}
           {workoutState.status === "ready" && screen === "onboardingBuild" && (
@@ -730,7 +727,6 @@ function OnboardingScreen({
   updateMetric,
   nextStep,
   previousStep,
-  skipToPlan,
 }) {
   const isSummary = stepIndex >= onboardingSteps.length;
   const step = onboardingSteps[Math.min(stepIndex, onboardingSteps.length - 1)];
@@ -746,9 +742,8 @@ function OnboardingScreen({
   if (isSummary) {
     return (
       <div className="page onboarding-page onboarding-summary">
-        <header className="onboarding-top">
+        <header className="onboarding-top onboarding-logo-top">
           <BrandMark />
-          <button onClick={skipToPlan}>View plan</button>
         </header>
 
         <section className="onboarding-hero reveal">
@@ -795,9 +790,8 @@ function OnboardingScreen({
 
   return (
     <div className={`page onboarding-page onboarding-${step.tone}`}>
-      <header className="onboarding-top">
+      <header className="onboarding-top onboarding-logo-top">
         <BrandMark />
-        <button onClick={skipToPlan}>View plan</button>
       </header>
 
       <section className="profile-builder-card reveal" key={`${step.phase}-${stepIndex}`}>

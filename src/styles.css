@@ -216,8 +216,12 @@ button {
   display: flex;
   flex-direction: column;
   min-height: 100%;
-  padding-bottom: 10px;
+  padding: 22px 18px 10px;
   overflow: visible;
+}
+
+.focused-screen .onboarding-page {
+  padding: 22px 18px 10px;
 }
 
 .onboarding-page::before {
@@ -280,6 +284,10 @@ button {
   min-height: 50px;
 }
 
+.onboarding-logo-top {
+  justify-content: center;
+}
+
 .onboarding-top button {
   padding: 11px 14px;
   border-radius: 999px;
@@ -291,10 +299,10 @@ button {
 }
 
 .profile-builder-card {
-  margin-top: 8px;
-  padding: 9px 12px;
+  margin-top: 12px;
+  padding: 11px 12px;
   display: grid;
-  gap: 5px;
+  gap: 6px;
   border-radius: 20px;
   background: #151517;
   border: 1px solid #2a2a2d;
@@ -338,7 +346,7 @@ button {
 }
 
 .onboarding-hero {
-  margin-top: 14px;
+  margin-top: 26px;
   text-align: center;
 }
 
@@ -351,8 +359,8 @@ button {
 
 .onboarding-hero h1 {
   max-width: 360px;
-  margin: 6px auto 8px;
-  font-size: 32px;
+  margin: 8px auto 10px;
+  font-size: 34px;
   line-height: 0.96;
   font-weight: 1000;
   text-transform: uppercase;
@@ -362,8 +370,8 @@ button {
   max-width: 340px;
   margin: 0 auto;
   color: var(--muted);
-  font-size: 14px;
-  line-height: 1.3;
+  font-size: 15px;
+  line-height: 1.34;
 }
 
 .onboarding-stat {
@@ -403,13 +411,13 @@ button {
 
 .metric-stack {
   display: grid;
-  gap: 8px;
-  margin: 16px 0 10px;
+  gap: 10px;
+  margin: 22px 0 18px;
 }
 
 .onboarding-metric {
-  padding: 10px;
-  border-radius: 21px;
+  padding: 13px;
+  border-radius: 24px;
   background: var(--panel);
 }
 
@@ -425,13 +433,13 @@ button {
 
 .onboarding-metric > div {
   display: grid;
-  grid-template-columns: 44px 1fr 44px;
-  gap: 8px;
+  grid-template-columns: 50px 1fr 50px;
+  gap: 10px;
   align-items: center;
 }
 
 .onboarding-metric button {
-  height: 44px;
+  height: 50px;
   display: grid;
   place-items: center;
   border-radius: 19px;
@@ -440,7 +448,7 @@ button {
 }
 
 .onboarding-metric strong {
-  height: 44px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -500,9 +508,9 @@ button {
 
 .choice-stack {
   display: grid;
-  gap: 8px;
-  margin-top: 14px;
-  margin-bottom: 10px;
+  gap: 10px;
+  margin-top: 22px;
+  margin-bottom: 18px;
 }
 
 .choice-goals,
@@ -514,7 +522,7 @@ button {
 .choice-goals .choice-card,
 .choice-training .choice-card,
 .choice-setup .choice-card {
-  min-height: 98px;
+  min-height: 116px;
   align-content: space-between;
   grid-template-columns: 1fr;
 }
@@ -535,8 +543,8 @@ button {
 
 .choice-card {
   width: 100%;
-  min-height: 58px;
-  padding: 12px 14px 12px 17px;
+  min-height: 66px;
+  padding: 15px 15px 15px 18px;
   display: grid;
   grid-template-columns: 1fr 34px;
   align-items: center;
@@ -589,7 +597,7 @@ button {
 }
 
 .follow-up-group {
-  margin-top: 4px;
+  margin-top: 10px;
 }
 
 .follow-up-group .choice-stack {
@@ -599,8 +607,8 @@ button {
 }
 
 .follow-up-group .choice-card {
-  min-height: 58px;
-  padding: 12px;
+  min-height: 64px;
+  padding: 14px;
   grid-template-columns: 1fr 26px;
   border-radius: 20px;
 }
@@ -618,8 +626,8 @@ button {
 
 .brief-card {
   display: grid;
-  gap: 8px;
-  margin-top: 22px;
+  gap: 10px;
+  margin-top: 24px;
   margin-bottom: 16px;
 }
 
