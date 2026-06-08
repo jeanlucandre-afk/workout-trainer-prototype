@@ -825,9 +825,8 @@ function OnboardingMetric({ metric, value, updateMetric }) {
         <button onClick={() => updateMetric(metric, -metric.step)} aria-label={`Decrease ${metric.label}`}>
           <Minus size={22} />
         </button>
-        <strong>
-          {value}
-          {metric.unit && <small>{metric.unit}</small>}
+        <strong className="value-readout">
+          <AnimatedValue value={value} unit={metric.unit} />
         </strong>
         <button onClick={() => updateMetric(metric, metric.step)} aria-label={`Increase ${metric.label}`}>
           <Plus size={22} />
@@ -1359,9 +1358,8 @@ function ControlStepper({ label, value, unit, onMinus, onPlus }) {
         <button onClick={onMinus} aria-label={`Decrease ${label}`}>
           <Minus size={26} />
         </button>
-        <strong>
-          {value}
-          {unit && <small>{unit}</small>}
+        <strong className="value-readout">
+          <AnimatedValue value={value} unit={unit} />
         </strong>
         <button onClick={onPlus} aria-label={`Increase ${label}`}>
           <Plus size={26} />
@@ -1379,15 +1377,41 @@ function MiniStepper({ label, value, unit, onMinus, onPlus }) {
         <button onClick={onMinus} aria-label={`Decrease ${label}`}>
           <Minus size={18} />
         </button>
-        <strong>
-          {value}
-          {unit && <small>{unit}</small>}
+        <strong className="value-readout">
+          <AnimatedValue value={value} unit={unit} />
         </strong>
         <button onClick={onPlus} aria-label={`Increase ${label}`}>
           <Plus size={18} />
         </button>
       </div>
     </div>
+  );
+}
+
+function AnimatedValue({ value, unit }) {
+  const previousRef = useRef(value);
+  const numericValue = Number(value);
+  const numericPrevious = Number(previousRef.current);
+  const direction =
+    Number.isFinite(numericValue) && Number.isFinite(numericPrevious)
+      ? numericValue > numericPrevious
+        ? "up"
+        : numericValue < numericPrevious
+          ? "down"
+          : "same"
+      : "same";
+
+  useEffect(() => {
+    previousRef.current = value;
+  }, [value]);
+
+  return (
+    <>
+      <span className="number-tick" data-direction={direction} key={`${value}-${direction}`}>
+        {value}
+      </span>
+      {unit && <small>{unit}</small>}
+    </>
   );
 }
 

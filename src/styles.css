@@ -352,6 +352,45 @@ button {
   font-variant-numeric: tabular-nums;
 }
 
+.value-readout {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  contain: paint;
+}
+
+.value-readout::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(244, 244, 246, 0.14), transparent 58%);
+  opacity: 0;
+  transform: scale(0.72);
+  pointer-events: none;
+}
+
+.value-readout:active::after {
+  animation: readoutFlash 180ms var(--ease-out-quint) both;
+}
+
+.number-tick {
+  display: inline-block;
+  min-width: 1ch;
+  will-change: transform, opacity;
+  animation: numberTickUp 190ms var(--ease-out-quint) both;
+}
+
+.number-tick[data-direction="down"] {
+  animation-name: numberTickDown;
+}
+
+.number-tick[data-direction="same"] {
+  animation-name: numberSettle;
+}
+
 .onboarding-metric small {
   color: var(--muted);
   font-size: 13px;
@@ -2179,6 +2218,61 @@ button {
   }
   80% {
     transform: translateX(0.5px);
+  }
+}
+
+@keyframes numberTickUp {
+  from {
+    opacity: 0.3;
+    transform: translateY(10px) scale(0.94);
+  }
+  72% {
+    opacity: 1;
+    transform: translateY(-1px) scale(1.025);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes numberTickDown {
+  from {
+    opacity: 0.3;
+    transform: translateY(-10px) scale(0.94);
+  }
+  72% {
+    opacity: 1;
+    transform: translateY(1px) scale(1.025);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes numberSettle {
+  from {
+    opacity: 0.55;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes readoutFlash {
+  0% {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+  45% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.08);
   }
 }
 
