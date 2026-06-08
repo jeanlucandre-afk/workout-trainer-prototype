@@ -14,10 +14,7 @@
   --radius-lg: 30px;
   --radius-md: 22px;
   --radius-sm: 14px;
-  --ease: cubic-bezier(0.23, 1, 0.32, 1);
-  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
-  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease: cubic-bezier(0.2, 0.9, 0.18, 1);
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
@@ -39,7 +36,6 @@ button {
   color: inherit;
   font: inherit;
   cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
 }
 
 .app-shell {
@@ -80,7 +76,7 @@ button {
   position: relative;
   min-height: 100%;
   padding: 24px 18px 112px;
-  animation: pageIn 240ms var(--ease-out) both;
+  animation: pageIn 420ms var(--ease) both;
 }
 
 .focused-screen .page {
@@ -107,8 +103,6 @@ button {
   place-items: center;
   background: transparent;
   color: var(--text);
-  border-radius: 16px;
-  transition: transform 140ms var(--ease-out), background 140ms ease;
 }
 
 .dots {
@@ -126,7 +120,6 @@ button {
   background: var(--text);
   color: #050505;
   transform: rotate(-8deg);
-  transition: transform 160ms var(--ease-out), filter 160ms ease;
 }
 
 .brand-button {
@@ -134,8 +127,6 @@ button {
   place-items: center;
   padding: 0;
   background: transparent;
-  border-radius: 16px;
-  transition: transform 140ms var(--ease-out);
 }
 
 .program-heading {
@@ -394,7 +385,7 @@ button {
   border-radius: 27px;
   background: transparent;
   text-align: left;
-  transition: transform 160ms var(--ease-out), background 160ms ease;
+  transition: transform 180ms var(--ease), background 180ms var(--ease);
 }
 
 .exercise-plan-card.expanded {
@@ -403,8 +394,7 @@ button {
 
 .exercise-expansion {
   padding: 0 14px 18px;
-  transform-origin: top center;
-  animation: expandIn 210ms var(--ease-out) both;
+  animation: expandIn 260ms var(--ease) both;
 }
 
 .set-edit-list {
@@ -552,18 +542,10 @@ button {
 }
 
 .exercise-row:active,
-.icon-button:active,
-.brand-button:active,
-.secondary-action:active,
-.mini-stepper button:active,
 .primary-action:active,
 .stepper button:active,
 .set-dot:active {
   transform: scale(0.97);
-}
-
-.brand-button:active .brand-mark {
-  transform: rotate(-8deg) scale(0.97);
 }
 
 .exercise-row img {
@@ -615,7 +597,7 @@ button {
   font-weight: 1000;
   text-transform: uppercase;
   letter-spacing: 0;
-  transition: transform 150ms var(--ease-out), filter 150ms ease, background 150ms ease;
+  transition: transform 180ms var(--ease), filter 180ms var(--ease);
 }
 
 .workout-page .sticky-action {
@@ -757,13 +739,13 @@ button {
   box-shadow:
     0 0 0 12px rgba(41, 214, 133, 0.09),
     0 22px 70px rgba(41, 214, 133, 0.28);
-  animation: checkPop 300ms var(--ease-out) both;
+  animation: checkPop 540ms var(--ease) both;
   transition:
-    width 320ms var(--ease-in-out),
-    border-radius 320ms var(--ease-in-out),
-    background 320ms var(--ease-in-out),
-    color 220ms ease,
-    box-shadow 320ms var(--ease-in-out);
+    width 520ms var(--ease),
+    border-radius 520ms var(--ease),
+    background 520ms var(--ease),
+    color 520ms var(--ease),
+    box-shadow 520ms var(--ease);
 }
 
 .timer-visible .done-check {
@@ -838,7 +820,7 @@ button {
   align-items: end;
   justify-content: center;
   background: rgba(0, 0, 0, 0.58);
-  animation: fadeIn 160ms ease both;
+  animation: fadeIn 180ms ease both;
 }
 
 .summary-sheet {
@@ -847,8 +829,7 @@ button {
   border-radius: 30px 30px 0 0;
   background: #1a1a1c;
   box-shadow: 0 -26px 70px rgba(0, 0, 0, 0.7);
-  transform-origin: bottom center;
-  animation: sheetUp 240ms var(--ease-drawer) both;
+  animation: sheetUp 300ms var(--ease) both;
 }
 
 .sheet-handle {
@@ -1113,7 +1094,7 @@ button {
   color: var(--muted);
   font-size: 18px;
   font-weight: 900;
-  transition: background 170ms ease, color 170ms ease, transform 150ms var(--ease-out);
+  transition: background 220ms var(--ease), color 220ms var(--ease), transform 220ms var(--ease);
 }
 
 .set-dot.active {
@@ -1152,7 +1133,7 @@ button {
   display: grid;
   place-items: center;
   background: var(--panel-2);
-  transition: transform 140ms var(--ease-out), background 140ms ease;
+  transition: transform 160ms var(--ease), background 160ms var(--ease);
 }
 
 .stepper strong {
@@ -1348,7 +1329,7 @@ button {
 }
 
 .reveal {
-  animation: reveal 320ms var(--ease-out) both;
+  animation: reveal 520ms var(--ease) both;
 }
 
 .reveal:nth-child(2) {
@@ -1366,7 +1347,7 @@ button {
 @keyframes pageIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(18px);
   }
   to {
     opacity: 1;
@@ -1377,7 +1358,7 @@ button {
 @keyframes reveal {
   from {
     opacity: 0;
-    transform: translateY(10px) scale(0.99);
+    transform: translateY(18px) scale(0.98);
   }
   to {
     opacity: 1;
@@ -1397,21 +1378,21 @@ button {
 @keyframes expandIn {
   from {
     opacity: 0;
-    transform: translateY(-6px) scaleY(0.98);
+    transform: translateY(-8px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scaleY(1);
+    transform: translateY(0);
   }
 }
 
 @keyframes checkPop {
   0% {
     opacity: 0;
-    transform: scale(0.94);
+    transform: scale(0.72);
   }
   65% {
-    transform: scale(1.02);
+    transform: scale(1.06);
   }
   100% {
     opacity: 1;
@@ -1431,29 +1412,11 @@ button {
 @keyframes sheetUp {
   from {
     opacity: 0;
-    transform: translateY(100%) scale(0.98);
+    transform: translateY(24px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .icon-button:hover {
-    background: rgba(255, 255, 255, 0.06);
-  }
-
-  .brand-button:hover .brand-mark {
-    filter: brightness(0.92);
-  }
-
-  .exercise-row:hover {
-    background: rgba(255, 255, 255, 0.025);
-  }
-
-  .stepper button:hover {
-    background: #343438;
+    transform: translateY(0);
   }
 }
 
