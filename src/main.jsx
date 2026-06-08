@@ -851,11 +851,6 @@ function OnboardingScreen({
         </div>
       )}
 
-      <section className="trainer-insight reveal" key={`${step.title}-insight`}>
-        <span>Trainer insight</span>
-        <p>{step.insight}</p>
-      </section>
-
       <OnboardingFooter
         current={stepIndex + 1}
         total={onboardingSteps.length + 1}

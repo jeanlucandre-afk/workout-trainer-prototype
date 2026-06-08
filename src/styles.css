@@ -300,8 +300,7 @@ button {
   border: 1px solid #2a2a2d;
 }
 
-.profile-builder-card span,
-.trainer-insight span {
+.profile-builder-card span {
   color: var(--dim);
   font-size: 11px;
   font-weight: 950;
@@ -580,23 +579,6 @@ button {
   border-color: #050505;
   background: #050505;
   color: var(--accent);
-}
-
-.trainer-insight {
-  margin: auto 0 8px;
-  padding: 10px 13px;
-  border-radius: 20px;
-  background: #111112;
-  border: 1px solid #28282c;
-  animation-delay: 130ms;
-}
-
-.trainer-insight p {
-  margin: 4px 0 0;
-  color: var(--text);
-  font-size: 13px;
-  line-height: 1.25;
-  font-weight: 900;
 }
 
 .choice-card:active,
