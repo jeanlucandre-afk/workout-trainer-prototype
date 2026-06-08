@@ -23,6 +23,7 @@ const exerciseImageMap = {
 };
 
 const fallbackExerciseImage = "/exercises/exercise-placeholder.svg";
+const buildPlanStorageKey = "setline.buildingPlan";
 
 function formatWeight(weight) {
   return weight ? `${weight} KG` : "BW";
@@ -370,8 +371,12 @@ function publishOnboardingProfile(profile) {
 
 function App() {
   const screenRef = useRef(null);
+  const onboardingBuildTimeoutRef = useRef(null);
   const [workoutState, setWorkoutState] = useState({ status: "loading", workoutPlan: null, error: "" });
   const [screen, setScreen] = useState("onboarding");
+  const [isBuildingPlan, setIsBuildingPlan] = useState(
+    () => typeof window !== "undefined" && window.sessionStorage.getItem(buildPlanStorageKey) === "1",
+  );
   const [onboardingStep, setOnboardingStep] = useState(0);
   const [onboardingProfile, setOnboardingProfile] = useState(onboardingDefaults);
   const [activeExercise, setActiveExercise] = useState(0);
@@ -407,6 +412,20 @@ function App() {
 
     return () => window.clearTimeout(timer);
   }, []);
+
+  useEffect(() => () => window.clearTimeout(onboardingBuildTimeoutRef.current), []);
+
+  useEffect(() => {
+    if (!isBuildingPlan) return undefined;
+    window.clearTimeout(onboardingBuildTimeoutRef.current);
+    onboardingBuildTimeoutRef.current = window.setTimeout(() => {
+      publishOnboardingProfile(onboardingProfile);
+      window.sessionStorage.removeItem(buildPlanStorageKey);
+      setScreen("plan");
+      setIsBuildingPlan(false);
+    }, 3200);
+    return () => window.clearTimeout(onboardingBuildTimeoutRef.current);
+  }, [isBuildingPlan, onboardingProfile]);
 
   useEffect(() => {
     function applyIncomingWorkout(payload) {
@@ -484,12 +503,6 @@ function App() {
     }, 1000);
     return () => window.clearInterval(timer);
   }, [screen, restSeconds]);
-
-  useEffect(() => {
-    if (screen !== "onboardingBuild") return undefined;
-    const timeout = window.setTimeout(() => setScreen("plan"), 1150);
-    return () => window.clearTimeout(timeout);
-  }, [screen]);
 
   const nextTarget = useMemo(() => {
     if (activeSet < current.sets.length - 1) {
@@ -580,8 +593,8 @@ function App() {
       setOnboardingStep((value) => value + 1);
       return;
     }
-    publishOnboardingProfile(onboardingProfile);
-    setScreen("onboardingBuild");
+    window.sessionStorage.setItem(buildPlanStorageKey, "1");
+    setIsBuildingPlan(true);
   }
 
   function previousOnboardingStep() {
@@ -608,9 +621,6 @@ function App() {
               nextStep={nextOnboardingStep}
               previousStep={previousOnboardingStep}
             />
-          )}
-          {workoutState.status === "ready" && screen === "onboardingBuild" && (
-            <PlanBuildScreen profile={onboardingProfile} onReady={() => setScreen("plan")} />
           )}
           {workoutState.status === "ready" && screen === "plan" && (
             <PlanScreen
@@ -713,6 +723,9 @@ function App() {
               startWorkout={startWorkout}
               allDone={allDone}
             />
+          )}
+          {workoutState.status === "ready" && isBuildingPlan && (
+            <PlanBuildScreen profile={onboardingProfile} />
           )}
         </section>
       </div>
@@ -887,27 +900,48 @@ function ChoiceStack({ options, selected, selectionType, tone, onSelect }) {
   );
 }
 
-function PlanBuildScreen({ profile, onReady }) {
+function PlanBuildScreen({ profile }) {
+  const buildSummary = joinText([
+    profile.primaryGoal,
+    `${profile.trainingDays} days/week`,
+    profile.mainConcern,
+  ]);
+
   return (
     <div className="page build-plan-page">
-      <header className="onboarding-top">
+      <header className="onboarding-top onboarding-logo-top">
         <BrandMark />
-        <button onClick={onReady}>Open plan</button>
       </header>
 
-      <section className="build-orbit reveal" aria-label="Building trainer plan">
-        <div className="build-pulse">
-          <Dumbbell size={38} />
+      <section className="build-stage" aria-label="Building trainer plan">
+        <div className="build-constellation" aria-hidden="true">
+          <span className="build-chip build-chip-1">Body</span>
+          <span className="build-chip build-chip-2">Goals</span>
+          <span className="build-chip build-chip-3">Schedule</span>
+          <span className="build-chip build-chip-4">Guardrails</span>
+          <span className="build-chip build-chip-5">Recovery</span>
         </div>
-        <span>Generating trainer plan</span>
-        <h1>Profile locked</h1>
-        <p>{profile.primaryGoal} · {profile.trainingDays} days/week · {profile.mainConcern}</p>
+
+        <div className="build-core">
+          <div className="build-ring build-ring-one" />
+          <div className="build-ring build-ring-two" />
+          <div className="build-pulse">
+            <Dumbbell size={36} />
+            <Check className="build-check" size={24} />
+          </div>
+        </div>
+
+        <div className="build-copy">
+          <span>Generating trainer plan</span>
+          <h1>Plan taking shape</h1>
+          <p>{buildSummary}</p>
+        </div>
       </section>
 
-      <section className="build-stack reveal">
+      <section className="build-stack">
         <article>
           <i />
-          <span>Goals matched</span>
+          <span>Profile interpreted</span>
         </article>
         <article>
           <i />

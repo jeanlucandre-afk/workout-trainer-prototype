@@ -60,6 +60,7 @@ button {
 }
 
 .screen {
+  position: relative;
   height: 100%;
   overflow-y: auto;
   scrollbar-width: none;
@@ -703,67 +704,204 @@ button {
 }
 
 .build-plan-page {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
   display: flex;
   flex-direction: column;
   min-height: 100%;
   background:
-    radial-gradient(circle at 50% 22%, rgba(244, 244, 246, 0.12), transparent 30%),
+    radial-gradient(circle at 50% 30%, rgba(244, 244, 246, 0.13), transparent 34%),
+    linear-gradient(180deg, rgba(244, 244, 246, 0.045), transparent 36%),
     #000;
+  overflow: hidden;
 }
 
-.build-orbit {
+.build-stage {
+  position: relative;
   flex: 1;
-  min-height: 430px;
+  min-height: 470px;
   display: grid;
   place-items: center;
   align-content: center;
-  gap: 14px;
+  gap: 22px;
   text-align: center;
+  isolation: isolate;
+}
+
+.build-stage::before {
+  content: "";
+  position: absolute;
+  inset: 8% 8% auto;
+  height: 310px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(244, 244, 246, 0.14), transparent 30%),
+    radial-gradient(circle at 50% 50%, rgba(244, 244, 246, 0.06), transparent 62%);
+  opacity: 0;
+  transform: scale(0.72);
+  animation: buildField 1450ms var(--ease-out-expo) 140ms both;
+  pointer-events: none;
+}
+
+.build-constellation {
+  position: absolute;
+  inset: 20px 4px auto;
+  height: 250px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.build-chip {
+  position: absolute;
+  display: inline-grid;
+  place-items: center;
+  min-width: 86px;
+  padding: 9px 12px;
+  border-radius: 999px;
+  background: #171719;
+  border: 1px solid #303034;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 1000;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translate3d(var(--chip-x, 0), var(--chip-y, 0), 0) scale(0.92);
+  animation: buildChipGather 1180ms var(--ease-out-expo) both;
+  will-change: transform, opacity;
+}
+
+.build-chip-1 {
+  top: 18px;
+  left: 0;
+  --chip-x: 132px;
+  --chip-y: 106px;
+  animation-delay: 80ms;
+}
+
+.build-chip-2 {
+  top: 8px;
+  right: 8px;
+  --chip-x: -130px;
+  --chip-y: 116px;
+  animation-delay: 190ms;
+}
+
+.build-chip-3 {
+  top: 96px;
+  left: 18px;
+  --chip-x: 118px;
+  --chip-y: 20px;
+  animation-delay: 300ms;
+}
+
+.build-chip-4 {
+  top: 105px;
+  right: 0;
+  --chip-x: -142px;
+  --chip-y: 14px;
+  animation-delay: 410ms;
+}
+
+.build-chip-5 {
+  top: 182px;
+  left: 50%;
+  --chip-x: 0;
+  --chip-y: -64px;
+  transform: translate3d(-50%, 0, 0) scale(0.92);
+  animation-name: buildCenterChipGather;
+  animation-delay: 520ms;
+}
+
+.build-core {
+  position: relative;
+  z-index: 2;
+  width: 178px;
+  height: 178px;
+  display: grid;
+  place-items: center;
+  contain: paint;
+}
+
+.build-ring {
+  position: absolute;
+  inset: 18px;
+  border-radius: 50%;
+  border: 1px solid rgba(244, 244, 246, 0.16);
+  opacity: 0;
+  transform: scale(0.65) rotate(0deg);
+  animation: buildOrbitRing 1800ms var(--ease-out-expo) both;
+}
+
+.build-ring-one {
+  border-top-color: rgba(244, 244, 246, 0.72);
+  animation-delay: 260ms;
+}
+
+.build-ring-two {
+  inset: 2px;
+  border-bottom-color: rgba(244, 244, 246, 0.48);
+  animation-delay: 420ms;
 }
 
 .build-pulse {
   position: relative;
-  width: 126px;
-  height: 126px;
+  z-index: 2;
+  width: 112px;
+  height: 112px;
   display: grid;
   place-items: center;
   border-radius: 50%;
   background: var(--accent);
   color: #050505;
-  animation: buildPulse 920ms var(--ease-out-quint) infinite alternate;
+  box-shadow: 0 0 0 1px rgba(244, 244, 246, 0.08);
+  transform: scale(0.76);
+  animation: buildCoreArrive 1550ms var(--ease-out-expo) both;
+  will-change: transform, filter;
 }
 
-.build-pulse::before,
-.build-pulse::after {
-  content: "";
+.build-check {
   position: absolute;
-  inset: -12px;
-  border: 1px solid rgba(244, 244, 246, 0.22);
-  border-radius: inherit;
-  animation: buildRing 1150ms var(--ease-out-quint) infinite;
+  right: 11px;
+  bottom: 11px;
+  width: 32px;
+  height: 32px;
+  padding: 6px;
+  border-radius: 50%;
+  background: #050505;
+  color: var(--accent);
+  opacity: 0;
+  transform: scale(0.65);
+  animation: buildCheckIn 360ms var(--ease-out-quint) 1400ms both;
 }
 
-.build-pulse::after {
-  inset: -26px;
-  animation-delay: 180ms;
+.build-copy {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  opacity: 0;
+  transform: translateY(12px);
+  animation: buildCopyIn 620ms var(--ease-out-quint) 560ms both;
 }
 
-.build-orbit span {
+.build-copy span {
   color: var(--dim);
   font-size: 13px;
   font-weight: 950;
   text-transform: uppercase;
 }
 
-.build-orbit h1 {
+.build-copy h1 {
   margin: 0;
-  font-size: 48px;
+  font-size: 43px;
   line-height: 0.95;
   font-weight: 1000;
   text-transform: uppercase;
 }
 
-.build-orbit p {
+.build-copy p {
   max-width: 310px;
   margin: 0;
   color: var(--muted);
@@ -773,12 +911,12 @@ button {
 
 .build-stack {
   display: grid;
-  gap: 9px;
+  gap: 8px;
   margin-bottom: 12px;
 }
 
 .build-stack article {
-  padding: 14px;
+  padding: 13px 14px;
   display: grid;
   grid-template-columns: 18px 1fr;
   align-items: center;
@@ -789,6 +927,21 @@ button {
   font-size: 13px;
   font-weight: 950;
   text-transform: uppercase;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: buildStepIn 430ms var(--ease-out-quint) both;
+}
+
+.build-stack article:nth-child(1) {
+  animation-delay: 880ms;
+}
+
+.build-stack article:nth-child(2) {
+  animation-delay: 1120ms;
+}
+
+.build-stack article:nth-child(3) {
+  animation-delay: 1360ms;
 }
 
 .build-stack i {
@@ -796,15 +949,20 @@ button {
   height: 12px;
   border-radius: 50%;
   background: var(--accent);
-  animation: buildDot 700ms var(--ease-out-quint) both;
+  transform: scale(0.55);
+  animation: buildDot 360ms var(--ease-out-quint) both;
+}
+
+.build-stack article:nth-child(1) i {
+  animation-delay: 980ms;
 }
 
 .build-stack article:nth-child(2) i {
-  animation-delay: 160ms;
+  animation-delay: 1220ms;
 }
 
 .build-stack article:nth-child(3) i {
-  animation-delay: 320ms;
+  animation-delay: 1460ms;
 }
 
 .intake-strip {
@@ -2532,28 +2690,6 @@ button {
   }
 }
 
-@keyframes buildPulse {
-  from {
-    transform: scale(0.97);
-    filter: brightness(0.94);
-  }
-  to {
-    transform: scale(1.02);
-    filter: brightness(1.04);
-  }
-}
-
-@keyframes buildRing {
-  from {
-    opacity: 0.7;
-    transform: scale(0.88);
-  }
-  to {
-    opacity: 0;
-    transform: scale(1.12);
-  }
-}
-
 @keyframes buildDot {
   from {
     opacity: 0;
@@ -2562,6 +2698,122 @@ button {
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+@keyframes buildField {
+  0% {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+  45% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.72;
+    transform: scale(1);
+  }
+}
+
+@keyframes buildChipGather {
+  0% {
+    opacity: 0;
+    transform: translate3d(var(--chip-x), var(--chip-y), 0) scale(0.88);
+  }
+  32% {
+    opacity: 1;
+  }
+  68% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scale(0.78);
+  }
+}
+
+@keyframes buildCenterChipGather {
+  0% {
+    opacity: 0;
+    transform: translate3d(calc(-50% + var(--chip-x)), var(--chip-y), 0) scale(0.88);
+  }
+  32% {
+    opacity: 1;
+  }
+  68% {
+    opacity: 1;
+    transform: translate3d(-50%, 0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-50%, 0, 0) scale(0.78);
+  }
+}
+
+@keyframes buildOrbitRing {
+  0% {
+    opacity: 0;
+    transform: scale(0.65) rotate(-18deg);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.86;
+    transform: scale(1) rotate(22deg);
+  }
+}
+
+@keyframes buildCoreArrive {
+  0% {
+    transform: scale(0.76);
+    filter: brightness(0.88);
+  }
+  46% {
+    transform: scale(0.91);
+    filter: brightness(0.96);
+  }
+  76% {
+    transform: scale(1.04);
+    filter: brightness(1.05);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+@keyframes buildCheckIn {
+  from {
+    opacity: 0;
+    transform: scale(0.65) rotate(-12deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes buildCopyIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes buildStepIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
