@@ -24,6 +24,10 @@ const exerciseImageMap = {
 
 const fallbackExerciseImage = "/exercises/exercise-placeholder.svg";
 
+function formatWeight(weight) {
+  return weight ? `${weight} KG` : "BW";
+}
+
 const demoWorkoutPlan = {
   title: "Lower body + core",
   source: "AI generated plan",
@@ -607,7 +611,7 @@ function PlanScreen({
                 <strong>{exercise.name}</strong>
                 <small>{exercise.sets.length} sets · {exercise.muscle} · {restDurations[index]}s rest</small>
               </span>
-              <b>{sessionLog[index][0].weight || "BW"}</b>
+              <b>{formatWeight(sessionLog[index][0].weight)}</b>
             </button>
 
             {expandedExercise === index && (
@@ -617,7 +621,7 @@ function PlanScreen({
                     <div className="set-edit-card" key={`${exercise.name}-${setIndex}`}>
                       <div className="set-edit-heading">
                         <span>Set {setIndex + 1}</span>
-                        <b>{set.reps} reps · {set.weight || "BW"}{set.weight ? "kg" : ""}</b>
+                        <b>{set.reps} reps · {formatWeight(set.weight)}</b>
                       </div>
                       <div className="mini-stepper-grid">
                         <MiniStepper
@@ -1152,7 +1156,7 @@ function ExerciseDoneScreen({
 
 function sessionLabel(exercise, setIndex) {
   const set = exercise.sets[setIndex];
-  return `${set.reps} reps · ${set.weight || "BW"}${set.weight ? "kg" : ""}`;
+  return `${set.reps} reps · ${formatWeight(set.weight)}`;
 }
 
 function CompleteScreen({ sessionResult, completedSets, totalSets, startWorkout }) {
