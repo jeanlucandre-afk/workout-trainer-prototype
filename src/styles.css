@@ -10,6 +10,8 @@
   --line: #333337;
   --accent: #e9e9ee;
   --green: #29d685;
+  --success: #7ee7b0;
+  --success-muted: rgba(126, 231, 176, 0.2);
   --cyan: #05aeea;
   --radius-lg: 30px;
   --radius-md: 22px;
@@ -734,11 +736,11 @@ button {
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: var(--green);
-  color: #061008;
+  background: var(--accent);
+  color: #0d7e47;
   box-shadow:
-    0 0 0 12px rgba(41, 214, 133, 0.09),
-    0 22px 70px rgba(41, 214, 133, 0.28);
+    0 0 0 10px rgba(126, 231, 176, 0.08),
+    0 22px 70px rgba(126, 231, 176, 0.16);
   animation: checkPop 540ms var(--ease) both;
   transition:
     width 520ms var(--ease),
@@ -753,11 +755,11 @@ button {
   border-radius: 999px;
   background:
     radial-gradient(circle at center, #050505 58%, transparent 59%),
-    conic-gradient(var(--green) var(--rest-progress), #303034 0);
+    conic-gradient(var(--success) var(--rest-progress), #303034 0);
   color: var(--text);
   box-shadow:
-    0 0 0 1px rgba(41, 214, 133, 0.26),
-    0 22px 70px rgba(41, 214, 133, 0.18);
+    0 0 0 1px rgba(126, 231, 176, 0.18),
+    0 22px 70px rgba(126, 231, 176, 0.12);
 }
 
 .done-check strong {
@@ -808,7 +810,7 @@ button {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: var(--green);
+  background: var(--success);
   transition: width 450ms linear;
 }
 
@@ -966,7 +968,7 @@ button {
 
 .workout-page.editing-mode {
   background:
-    radial-gradient(circle at 50% 16%, rgba(41, 214, 133, 0.13), transparent 28%),
+    radial-gradient(circle at 50% 16%, rgba(126, 231, 176, 0.07), transparent 28%),
     #000;
 }
 
@@ -986,15 +988,15 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  border: 1px solid rgba(41, 214, 133, 0.38);
+  border: 1px solid rgba(126, 231, 176, 0.26);
   border-radius: 999px;
-  background: rgba(41, 214, 133, 0.1);
-  box-shadow: 0 0 0 1px rgba(41, 214, 133, 0.08);
+  background: rgba(126, 231, 176, 0.07);
+  box-shadow: 0 0 0 1px rgba(126, 231, 176, 0.05);
   animation: editWobble 1300ms ease-in-out infinite;
 }
 
 .edit-status span {
-  color: var(--green);
+  color: var(--success);
   font-size: 12px;
   font-weight: 1000;
   text-transform: uppercase;
@@ -1010,7 +1012,7 @@ button {
 .editing-mode .exercise-visual {
   height: 210px;
   margin: 10px 18px 0;
-  border: 1px solid rgba(41, 214, 133, 0.24);
+  border: 1px solid rgba(126, 231, 176, 0.18);
   border-radius: 30px;
 }
 
@@ -1019,7 +1021,7 @@ button {
 }
 
 .editing-mode .visual-scrim {
-  background: linear-gradient(180deg, rgba(20, 80, 48, 0.08), #000 94%);
+  background: linear-gradient(180deg, rgba(126, 231, 176, 0.04), #000 94%);
 }
 
 .editing-mode .set-selector {
@@ -1027,13 +1029,14 @@ button {
 }
 
 .editing-mode .stepper {
-  background: #102017;
-  border: 1px solid rgba(41, 214, 133, 0.18);
+  background: #171b19;
+  border: 1px solid rgba(126, 231, 176, 0.14);
 }
 
 .editing-mode .primary-action {
-  background: var(--green);
-  color: #061008;
+  background: var(--accent);
+  color: #050505;
+  box-shadow: 0 0 0 1px rgba(126, 231, 176, 0.22);
 }
 
 .exercise-visual {
@@ -1104,7 +1107,7 @@ button {
 
 .set-dot.done {
   background: #2a2a2c;
-  color: var(--green);
+  color: var(--success);
 }
 
 .control-panel {
