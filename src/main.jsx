@@ -179,7 +179,6 @@ function App() {
               completedSets={completedSets}
               totalSets={totalSets}
               progress={progress}
-              sessionLog={sessionLog}
               updateSet={updateSet}
               setActiveSet={setActiveSet}
               logSet={logSet}
@@ -195,7 +194,6 @@ function App() {
               completedSets={completedSets}
               totalSets={totalSets}
               progress={progress}
-              sessionLog={sessionLog}
               currentRest={currentRest}
               restSeconds={restSeconds}
               nextTarget={nextTarget}
@@ -217,7 +215,6 @@ function App() {
               completedSets={completedSets}
               totalSets={totalSets}
               progress={progress}
-              sessionLog={sessionLog}
               restSeconds={restSeconds}
               editingMode
               updateSet={updateSet}
@@ -236,7 +233,6 @@ function App() {
               completedSets={completedSets}
               totalSets={totalSets}
               progress={progress}
-              sessionLog={sessionLog}
               currentRest={currentRest}
               restSeconds={restSeconds}
               nextTarget={nextTarget}
@@ -412,7 +408,6 @@ function WorkoutScreen({
   completedSets,
   totalSets,
   progress,
-  sessionLog,
   restSeconds = 0,
   editingMode = false,
   updateSet,
@@ -530,7 +525,6 @@ function WorkoutScreen({
           totalSets={totalSets}
           progress={progress}
           exerciseCompletedSets={exerciseCompletedSets}
-          sessionLog={sessionLog}
           onClose={() => setSummaryOpen(false)}
         />
       )}
@@ -545,7 +539,6 @@ function WorkoutSummarySheet({
   totalSets,
   progress,
   exerciseCompletedSets,
-  sessionLog,
   onClose,
 }) {
   const [expanded, setExpanded] = useState(false);
@@ -558,11 +551,8 @@ function WorkoutSummarySheet({
         ? { exerciseIndex: activeExercise + 1, setIndex: 0 }
         : null;
   const nextExercise = nextSet ? workoutPlan.exercises[nextSet.exerciseIndex] : null;
-  const volume = sessionLog.reduce(
-    (total, exerciseSets) =>
-      total + exerciseSets.reduce((sum, set) => sum + set.reps * set.weight, 0),
-    0,
-  );
+  const plannedMinutes = Number.parseInt(workoutPlan.duration, 10);
+  const paceMinutes = Math.max(1, Math.round(plannedMinutes / totalSets));
 
   function handleSummaryWheel(event) {
     if (event.deltaY < -4) {
@@ -627,8 +617,8 @@ function WorkoutSummarySheet({
             <strong>{exerciseCompletedSets}/{exercise.sets.length}</strong>
           </article>
           <article>
-            <span>Est. volume</span>
-            <strong>{volume.toLocaleString()}</strong>
+            <span>Session pace</span>
+            <strong>{paceMinutes} min/set</strong>
           </article>
         </div>
         <div className="summary-expanded">
@@ -734,7 +724,6 @@ function RestScreen({
   completedSets,
   totalSets,
   progress,
-  sessionLog,
   currentRest,
   restSeconds,
   nextTarget,
@@ -792,7 +781,6 @@ function RestScreen({
           totalSets={totalSets}
           progress={progress}
           exerciseCompletedSets={exerciseCompletedSets}
-          sessionLog={sessionLog}
           onClose={() => setSummaryOpen(false)}
         />
       )}
@@ -808,7 +796,6 @@ function ExerciseDoneScreen({
   completedSets,
   totalSets,
   progress,
-  sessionLog,
   currentRest,
   restSeconds,
   nextTarget,
@@ -878,7 +865,6 @@ function ExerciseDoneScreen({
           totalSets={totalSets}
           progress={progress}
           exerciseCompletedSets={exerciseCompletedSets}
-          sessionLog={sessionLog}
           onClose={() => setSummaryOpen(false)}
         />
       )}
