@@ -26,11 +26,21 @@
   box-sizing: border-box;
 }
 
+html {
+  min-height: 100%;
+  background: #000;
+}
+
 body {
   margin: 0;
-  background: radial-gradient(circle at 50% -20%, #202023 0, #000 35%);
+  background:
+    linear-gradient(#000, #000) padding-box,
+    radial-gradient(circle at 50% -20%, #202023 0, #000 35%);
+  background-color: #000;
   min-height: 100vh;
+  min-height: 100svh;
   color: var(--text);
+  overscroll-behavior: none;
 }
 
 button {
@@ -42,15 +52,18 @@ button {
 
 .app-shell {
   min-height: 100vh;
+  min-height: 100svh;
   display: grid;
   place-items: center;
   padding: 0;
+  background: #000;
 }
 
 .phone-frame {
   position: relative;
   width: min(100%, 430px);
   height: 100vh;
+  height: 100svh;
   min-height: 680px;
   overflow: hidden;
   background: var(--bg);
@@ -64,11 +77,12 @@ button {
   height: 100%;
   overflow-y: auto;
   scrollbar-width: none;
-  padding-bottom: 0;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  background: #000;
 }
 
 .screen-live {
-  padding-bottom: 0;
+  padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 .screen::-webkit-scrollbar {
@@ -83,7 +97,7 @@ button {
 }
 
 .focused-screen .page {
-  padding-bottom: 104px;
+  padding-bottom: calc(104px + env(safe-area-inset-bottom, 0px));
 }
 
 .top-row,
