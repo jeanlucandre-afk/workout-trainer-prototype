@@ -1,4 +1,8 @@
 {
+  "name": "setline-workout-trainer-prototype",
+  "version": "0.1.0",
+  "description": "Mobile-first workout execution prototype for an AI fitness chatbot.",
+  "private": true,
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",

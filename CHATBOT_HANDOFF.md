@@ -4,6 +4,27 @@ This frontend is a mobile-first workout execution app. It receives one structure
 
 The frontend should receive structured JSON, not free-form natural language. The chatbot can still explain the plan conversationally, but the UI contract should be a workout object.
 
+## Current App Routes
+
+- `/` shows the generated workout plan and gym execution flow.
+- `/onboarding` shows the generic trainer intake flow.
+
+The app is intentionally narrow. It does not create multiple plans, manage a full profile, or replace the chatbot. It is the UI surface for one generated plan at a time.
+
+## Hosting Notes
+
+- Vercel live URL: `https://workout-trainer-prototype.vercel.app/`
+- Vercel onboarding URL: `https://workout-trainer-prototype.vercel.app/onboarding`
+- Cloudflare Pages project: `workout-trainer-prototype`
+- Cloudflare Pages route fallback: `public/_redirects`
+
+Cloudflare deployment was prepared, but the first upload attempt hit Cloudflare API `502 Bad Gateway` responses on `POST /pages/assets/upload`. Retry:
+
+```bash
+npm run build
+npx wrangler@latest pages deploy dist --project-name workout-trainer-prototype --branch main
+```
+
 ## Workout Input Shape
 
 Recommended payload:
