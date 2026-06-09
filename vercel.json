@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/onboarding",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/((?!assets|exercises|favicon.ico).*)",
+      "destination": "/index.html"
+    }
+  ]
+}

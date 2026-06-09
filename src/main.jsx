@@ -25,6 +25,15 @@ const exerciseImageMap = {
 const fallbackExerciseImage = "/exercises/exercise-placeholder.svg";
 const buildPlanStorageKey = "setline.buildingPlan";
 
+function screenFromPath() {
+  if (typeof window === "undefined") return "plan";
+  return window.location.pathname === "/onboarding" ? "onboarding" : "plan";
+}
+
+function routeForScreen(screen) {
+  return screen === "onboarding" ? "/onboarding" : "/";
+}
+
 function formatWeight(weight) {
   return weight ? `${weight} KG` : "BW";
 }
@@ -373,7 +382,7 @@ function App() {
   const screenRef = useRef(null);
   const onboardingBuildTimeoutRef = useRef(null);
   const [workoutState, setWorkoutState] = useState({ status: "loading", workoutPlan: null, error: "" });
-  const [screen, setScreen] = useState("onboarding");
+  const [screen, setScreen] = useState(screenFromPath);
   const [isBuildingPlan, setIsBuildingPlan] = useState(
     () => typeof window !== "undefined" && window.sessionStorage.getItem(buildPlanStorageKey) === "1",
   );
@@ -389,6 +398,22 @@ function App() {
   const [sessionResult, setSessionResult] = useState(null);
 
   const workoutPlan = workoutState.workoutPlan;
+
+  useEffect(() => {
+    function handlePopState() {
+      setScreen(screenFromPath());
+    }
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  useEffect(() => {
+    const nextPath = routeForScreen(screen);
+    if (window.location.pathname !== nextPath) {
+      window.history.replaceState(null, "", nextPath);
+    }
+  }, [screen]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
