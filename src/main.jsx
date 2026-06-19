@@ -63,6 +63,22 @@ function removeTokenFromUrl() {
   window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
 }
 
+function routeErrorMessage(error) {
+  if (error?.status === 410) {
+    return "This link has expired. Message your coach on WhatsApp for a fresh one.";
+  }
+  if (error?.status === 400 || error?.status === 404) {
+    return "This link is invalid or no longer exists. Message your coach on WhatsApp for a fresh one.";
+  }
+  if (error?.status === 403) {
+    return "This link belongs to another member or workout. Open the latest link from your coach.";
+  }
+  if (error?.status === 401) {
+    return "This link needs a valid WhatsApp login. Open the latest link from your coach.";
+  }
+  return error instanceof Error ? error.message : "Could not load workout.";
+}
+
 const onboardingDefaults = {
   age: 28,
   height: 175,
@@ -538,8 +554,11 @@ function App() {
 
         if (workoutSessionId) {
           if (token) {
-            await exchangeMagicToken(token, workoutSessionId);
-            removeTokenFromUrl();
+            try {
+              await exchangeMagicToken(token, workoutSessionId);
+            } finally {
+              removeTokenFromUrl();
+            }
           }
           const session = await loadWorkoutSession(workoutSessionId);
           if (cancelled) return;
@@ -553,9 +572,15 @@ function App() {
           return;
         }
 
-        if (onboardingMemberId && token) {
-          await exchangeMagicToken(token);
-          removeTokenFromUrl();
+        if (onboardingMemberId) {
+          if (!token) {
+            throw Object.assign(new Error("Missing onboarding token"), { status: 401 });
+          }
+          try {
+            await exchangeMagicToken(token);
+          } finally {
+            removeTokenFromUrl();
+          }
         }
 
         const loadedPlan = loadWorkoutPayload();
@@ -569,15 +594,10 @@ function App() {
         setSessionLog(loadedPlan.exercises.map((exercise) => exercise.sets.map((set) => ({ ...set }))));
       } catch (error) {
         if (cancelled) return;
-        const message = error?.status === 410
-          ? "This link has expired. Message your coach on WhatsApp for a fresh one."
-          : error?.status === 401
-            ? "This link needs a valid WhatsApp login. Open the latest link from your coach."
-            : error instanceof Error ? error.message : "Could not load workout.";
         setWorkoutState({
           status: "error",
           workoutPlan: null,
-          error: message,
+          error: routeErrorMessage(error),
         });
       }
     }, 260);
@@ -1297,8 +1317,8 @@ function ErrorState({ message, onRetry }) {
         <div className="plan-chip">Error</div>
       </header>
       <section className="integration-panel reveal">
-        <span>Workout import failed</span>
-        <h1>Check payload</h1>
+        <span>Workout link issue</span>
+        <h1>Open a fresh link</h1>
         <p>{message || "The chatbot response could not be converted into a workout."}</p>
         <button className="primary-action" onClick={onRetry}>
           LOAD DEMO PLAN

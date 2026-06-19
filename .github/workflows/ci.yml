@@ -40,3 +40,6 @@ jobs:
 
       - name: Check recursive smoke syntax
         run: node --check scripts/recursive-production-smoke.mjs
+
+      - name: Check link error smoke syntax
+        run: node --check scripts/link-error-smoke.mjs

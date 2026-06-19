@@ -114,6 +114,7 @@ Production smokes require `SMOKE_ADMIN_API_KEY` because they create signed demo/
 SMOKE_ADMIN_API_KEY=... npm run smoke:onboarding-production
 SMOKE_ADMIN_API_KEY=... npm run smoke:production
 SMOKE_ADMIN_API_KEY=... npm run smoke:production-recursive
+npm run smoke:link-errors
 ```
 
 These scripts verify the real deployed backend and website:
@@ -128,6 +129,7 @@ These scripts verify the real deployed backend and website:
 - set completion flow
 - completed session state
 - unauthenticated session blocking
+- invalid/missing link messaging
 
 For local convenience when the backend repo sits beside this project, you can source the backend `.env` and pass only the admin key into the smoke:
 
@@ -141,6 +143,8 @@ SMOKE_ADMIN_API_KEY="$ADMIN_API_KEY" npm run smoke:production
 Do not use these as live WhatsApp proof. They verify web/backend behavior only; live WhatsApp proof is owned by the backend repo's guarded smoke script.
 
 `smoke:production-recursive` runs readiness, onboarding, and workout smokes repeatedly. It defaults to 3 consecutive iterations because that matches the current GO/NO-GO requirement for repeated safe production proof. Set `REQUIRE_SENT_READY=true` when Sent fallback credentials should be enforced as a hard gate.
+
+`smoke:link-errors` does not need admin credentials. It verifies that invalid workout links and missing onboarding tokens show explicit member-facing recovery messages and that bad URL tokens are stripped after failed exchange.
 
 ## Minimal Workout Payload
 
