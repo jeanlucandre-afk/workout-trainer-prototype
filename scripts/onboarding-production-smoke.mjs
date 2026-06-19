@@ -86,27 +86,12 @@ async function main() {
   assert(!page.url().includes("token="), "onboarding magic token remained in browser URL", { url: page.url() });
   await completeOnboarding(page);
 
-  await page.waitForURL(/\/workout\/[^?]+$/, { timeout: 90000 });
-  await page.getByRole("button", { name: /START WORKOUT/i }).waitFor({ timeout: 30000 });
-  const sessionId = page.url().match(/\/workout\/([^/?#]+)/)?.[1];
-  assert(sessionId, "redirected workout session ID was missing", { url: page.url() });
-
-  const sessionResponse = await context.request.get(`${webBase}/api/workout-sessions/${sessionId}`);
-  assert(sessionResponse.status() === 200, "redirected workout session could not be fetched", {
-    status: sessionResponse.status(),
-    body: await sessionResponse.text(),
-  });
-  const session = await sessionResponse.json();
-  const serialized = JSON.stringify(session).toLowerCase();
-  const serializedExercises = JSON.stringify(session.exercises || []).toLowerCase();
-  assert(session.member_id === onboarding.memberId, "workout session member did not match onboarding member", session);
-  assert(session.duration_minutes === 60, "onboarding session duration was not persisted into workout", session);
-  assert(session.metrics?.target_days_per_week === 3, "onboarding training days were not persisted into workout", session);
-  assert(serialized.includes("knee"), "onboarding injury/guardrail was not reflected in workout session", session);
-  assert(!serializedExercises.includes("leg press"), "blocked movement/equipment appeared in generated workout exercises", session);
+  await page.getByText(/Go back to WhatsApp/i).waitFor({ timeout: 90000 });
+  await page.getByText(/Text Ready to get your week/i).waitFor({ timeout: 30000 });
+  assert(page.url().includes(`/onboarding/${onboarding.memberId}`), "onboarding should not redirect to workout", { url: page.url() });
   assert(apiHits.some((hit) => hit.path === "/api/auth/link/exchange" && hit.status === 200), "onboarding token exchange was not called successfully", apiHits);
   assert(apiHits.some((hit) => hit.path.includes(`/api/onboarding/${onboarding.memberId}/submit`) && hit.status === 200), "onboarding submit was not called successfully", apiHits);
-  assert(apiHits.some((hit) => hit.path.includes(`/api/workout-sessions/${sessionId}`) && hit.status === 200), "workout session fetch was not called successfully", apiHits);
+  assert(!apiHits.some((hit) => hit.path.includes("/api/workout-sessions/") && hit.status === 200), "workout session should not be fetched until WhatsApp sends a workout link", apiHits);
 
   await browser.close();
   console.log(JSON.stringify({
@@ -118,9 +103,8 @@ async function main() {
       "onboarding_magic_link_exchange",
       "onboarding_token_stripping",
       "onboarding_profile_submit",
-      "onboarding_redirect_to_workout",
-      "onboarding_profile_to_workout_mapping",
-      "workout_session_fetch_after_onboarding",
+      "onboarding_return_to_whatsapp_screen",
+      "onboarding_no_auto_redirect_to_workout",
     ],
   }, null, 2));
 }

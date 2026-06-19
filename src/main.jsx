@@ -515,6 +515,7 @@ function App() {
   const [isBuildingPlan, setIsBuildingPlan] = useState(
     () => typeof window !== "undefined" && window.sessionStorage.getItem(buildPlanStorageKey) === "1",
   );
+  const [onboardingComplete, setOnboardingComplete] = useState(null);
   const [onboardingStep, setOnboardingStep] = useState(0);
   const [onboardingProfile, setOnboardingProfile] = useState(onboardingDefaults);
   const [activeExercise, setActiveExercise] = useState(0);
@@ -804,12 +805,15 @@ function App() {
       submitOnboarding(onboardingMemberId, onboardingPayloadFromProfile(onboardingProfile))
         .then((result) => {
           publishOnboardingProfile(onboardingProfile);
-          if (result?.workoutUrl) {
-            window.location.assign(result.workoutUrl);
-            return;
-          }
-          setIsBuildingPlan(false);
-          setWorkoutState({ status: "error", workoutPlan: null, error: "Onboarding finished, but no workout link came back." });
+          window.clearTimeout(onboardingBuildTimeoutRef.current);
+          onboardingBuildTimeoutRef.current = window.setTimeout(() => {
+            window.sessionStorage.removeItem(buildPlanStorageKey);
+            setOnboardingComplete({
+              workoutSessionId: result?.workoutSessionId,
+              nextAction: result?.nextAction || "return_to_whatsapp",
+            });
+            setIsBuildingPlan(false);
+          }, 2600);
         })
         .catch((error) => {
           setIsBuildingPlan(false);
@@ -869,14 +873,18 @@ function App() {
           )}
           {workoutState.status === "empty" && <EmptyState onLoadDemo={resetToDemoWorkout} />}
           {workoutState.status === "ready" && screen === "onboarding" && (
-            <OnboardingScreen
-              stepIndex={onboardingStep}
-              profile={onboardingProfile}
-              updateValue={updateOnboardingValue}
-              updateMetric={updateOnboardingMetric}
-              nextStep={nextOnboardingStep}
-              previousStep={previousOnboardingStep}
-            />
+            onboardingComplete ? (
+              <OnboardingReturnScreen profile={onboardingProfile} result={onboardingComplete} />
+            ) : (
+              <OnboardingScreen
+                stepIndex={onboardingStep}
+                profile={onboardingProfile}
+                updateValue={updateOnboardingValue}
+                updateMetric={updateOnboardingMetric}
+                nextStep={nextOnboardingStep}
+                previousStep={previousOnboardingStep}
+              />
+            )
           )}
           {workoutState.status === "ready" && screen === "plan" && (
             <PlanScreen
@@ -1208,6 +1216,49 @@ function PlanBuildScreen({ profile }) {
         <article>
           <i />
           <span>Workout ready</span>
+        </article>
+      </section>
+    </div>
+  );
+}
+
+function OnboardingReturnScreen({ profile, result }) {
+  const summary = joinText([
+    profile.primaryGoal,
+    `${profile.trainingDays} days/week`,
+    result?.workoutSessionId ? "Workout built" : "Profile saved",
+  ]);
+
+  return (
+    <div className="page onboarding-return-page">
+      <header className="onboarding-top onboarding-logo-top">
+        <BrandMark />
+      </header>
+
+      <section className="return-stage" aria-label="Onboarding complete">
+        <div className="return-mark">
+          <Dumbbell size={34} />
+          <Check size={22} />
+        </div>
+        <div className="return-copy">
+          <span>Workout ready</span>
+          <h1>Go back to WhatsApp</h1>
+          <p>{summary}</p>
+        </div>
+      </section>
+
+      <section className="return-stack">
+        <article>
+          <span>1</span>
+          <strong>Open your WhatsApp chat</strong>
+        </article>
+        <article>
+          <span>2</span>
+          <strong>Text Ready to get your week</strong>
+        </article>
+        <article>
+          <span>3</span>
+          <strong>Text Gym or Jim when you want to train</strong>
         </article>
       </section>
     </div>
