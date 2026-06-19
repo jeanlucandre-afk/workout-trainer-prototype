@@ -1,0 +1,39 @@
+name: Prototype CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build and smoke syntax
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev
+
+      - name: Check production smoke syntax
+        run: node --check scripts/production-smoke.mjs
+
+      - name: Check onboarding smoke syntax
+        run: node --check scripts/onboarding-production-smoke.mjs
