@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
     "smoke:onboarding-production": "node scripts/onboarding-production-smoke.mjs",
-    "smoke:production": "node scripts/production-smoke.mjs"
+    "smoke:production": "node scripts/production-smoke.mjs",
+    "smoke:production-recursive": "node scripts/recursive-production-smoke.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",

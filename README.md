@@ -113,6 +113,7 @@ Production smokes require `SMOKE_ADMIN_API_KEY` because they create signed demo/
 ```bash
 SMOKE_ADMIN_API_KEY=... npm run smoke:onboarding-production
 SMOKE_ADMIN_API_KEY=... npm run smoke:production
+SMOKE_ADMIN_API_KEY=... npm run smoke:production-recursive
 ```
 
 These scripts verify the real deployed backend and website:
@@ -138,6 +139,8 @@ SMOKE_ADMIN_API_KEY="$ADMIN_API_KEY" npm run smoke:production
 ```
 
 Do not use these as live WhatsApp proof. They verify web/backend behavior only; live WhatsApp proof is owned by the backend repo's guarded smoke script.
+
+`smoke:production-recursive` runs readiness, onboarding, and workout smokes repeatedly. It defaults to 3 consecutive iterations because that matches the current GO/NO-GO requirement for repeated safe production proof. Set `REQUIRE_SENT_READY=true` when Sent fallback credentials should be enforced as a hard gate.
 
 ## Minimal Workout Payload
 
