@@ -1,7 +1,15 @@
 {
   "rewrites": [
     {
-      "source": "/onboarding",
+      "source": "/api/:path*",
+      "destination": "https://ai-personal-trainer-whatsapp-mvp.vercel.app/api/:path*"
+    },
+    {
+      "source": "/onboarding/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/workout/:path*",
       "destination": "/index.html"
     },
     {

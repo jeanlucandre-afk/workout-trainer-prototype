@@ -10,6 +10,7 @@ import {
   Timer,
   X,
 } from "lucide-react";
+import { exchangeMagicToken, loadWorkoutSession, postWorkoutEvent, submitOnboarding } from "./api.js";
 import "./styles.css";
 
 const exerciseImageMap = {
@@ -27,15 +28,39 @@ const buildPlanStorageKey = "setline.buildingPlan";
 
 function screenFromPath() {
   if (typeof window === "undefined") return "plan";
-  return window.location.pathname === "/onboarding" ? "onboarding" : "plan";
+  return window.location.pathname.startsWith("/onboarding") ? "onboarding" : "plan";
 }
 
 function routeForScreen(screen) {
+  if (typeof window !== "undefined" && window.location.pathname.startsWith("/workout/")) {
+    return window.location.pathname;
+  }
+  if (typeof window !== "undefined" && window.location.pathname.startsWith("/onboarding/")) {
+    return window.location.pathname;
+  }
   return screen === "onboarding" ? "/onboarding" : "/";
 }
 
 function formatWeight(weight) {
   return weight ? `${weight} KG` : "BW";
+}
+
+function getRouteMatch(prefix) {
+  if (typeof window === "undefined") return null;
+  const parts = window.location.pathname.split("/").filter(Boolean);
+  return parts[0] === prefix && parts[1] ? parts[1] : null;
+}
+
+function getUrlToken() {
+  if (typeof window === "undefined") return null;
+  return new URLSearchParams(window.location.search).get("token");
+}
+
+function removeTokenFromUrl() {
+  if (typeof window === "undefined") return;
+  const url = new URL(window.location.href);
+  url.searchParams.delete("token");
+  window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
 }
 
 const onboardingDefaults = {
@@ -315,7 +340,95 @@ function normalizeWorkoutPlan(input) {
     focus: String(input.focus || "Generated session"),
     note: String(input.note || "Review the plan, adjust sets, then start when ready."),
     chatbotRequestId: input.chatbotRequestId || input.id || "demo-workout",
+    backendSession: input.backendSession,
     exercises,
+  };
+}
+
+function parseFirstNumber(value, fallback = 10) {
+  const match = String(value || "").match(/\d+(\.\d+)?/);
+  return match ? Number(match[0]) : fallback;
+}
+
+function parseLoad(value) {
+  const text = String(value || "").toLowerCase();
+  const explicit = text.match(/\d+(\.\d+)?/);
+  if (explicit) return Number(explicit[0]);
+  if (text.includes("body") || text.includes("bw")) return 0;
+  return 0;
+}
+
+function normalizeBackendWorkoutSession(session) {
+  const exercises = Array.isArray(session.exercises)
+    ? session.exercises.map((exercise) => {
+        const setCount = Math.max(1, Number(exercise.sets) || 1);
+        const reps = parseFirstNumber(exercise.reps, 10);
+        const weight = parseLoad(exercise.load);
+        return {
+          id: exercise.exercise_id,
+          name: exercise.name,
+          muscle: exercise.station || exercise.mode || "Training",
+          cue: exercise.note || "Controlled reps. Keep the movement clean.",
+          rest: Math.max(15, Number(exercise.rest_seconds) || 75),
+          image: String(exercise.image_url || "").startsWith("/assets/") ? undefined : exercise.image_url,
+          substitutions: exercise.substitutions || [],
+          sets: Array.from({ length: setCount }, () => ({ reps, weight })),
+        };
+      })
+    : [];
+
+  return normalizeWorkoutPlan({
+    id: session.session_id,
+    title: session.title,
+    source: "AI generated plan",
+    duration: `${session.duration_minutes || 45} min`,
+    focus: session.focus,
+    note: [session.rationale, ...(session.safety_notes || [])].filter(Boolean).join(" "),
+    defaultRest: 75,
+    exercises,
+    backendSession: session,
+  });
+}
+
+function onboardingPayloadFromProfile(profile) {
+  const injuryValues = [...(profile.pains || []), ...(profile.pastInjuries || [])]
+    .filter((item) => item && !String(item).toLowerCase().startsWith("no "));
+  const schedule = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].slice(0, profile.trainingDays || 3);
+  const experience = String(profile.experience || "").toLowerCase();
+  const trainingLevel = experience.includes("advanced")
+    ? "advanced"
+    : experience.includes("consistent") || experience.includes("some")
+      ? "intermediate"
+      : "beginner";
+
+  return {
+    goals: [profile.primaryGoal, ...(profile.goalDetails || [])].filter(Boolean),
+    goalDetails: [
+      profile.mainConcern,
+      profile.timeline,
+      `Motivation ${profile.motivation}/10`,
+      `Confidence ${profile.confidence}/10`,
+    ].filter(Boolean).join(". "),
+    injuries: injuryValues,
+    scheduleDays: schedule.length ? schedule : ["Mon", "Wed", "Fri"],
+    scheduleTime: "18:00",
+    sessionDurationMinutes: Number(profile.sessionLength) || 55,
+    trainingLevel,
+    equipmentNoGos: profile.movementsToAvoid || [],
+    motivationStyle: profile.mainConcern || "direct but supportive",
+    quietHoursStart: "21:00",
+    quietHoursEnd: "08:00",
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "Europe/Berlin",
+    consentAccepted: true,
+    optionalBodyScan: {
+      age: profile.age,
+      height_cm: profile.height,
+      weight_kg: profile.weight,
+      sleep_hours: profile.sleep,
+      training_style: profile.trainingStyle,
+      equipment: profile.equipment,
+      lifestyle: profile.lifestyle,
+    },
   };
 }
 
@@ -416,9 +529,37 @@ function App() {
   }, [screen]);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
+    let cancelled = false;
+    const timer = window.setTimeout(async () => {
       try {
+        const workoutSessionId = getRouteMatch("workout");
+        const onboardingMemberId = getRouteMatch("onboarding");
+        const token = getUrlToken();
+
+        if (workoutSessionId) {
+          if (token) {
+            await exchangeMagicToken(token, workoutSessionId);
+            removeTokenFromUrl();
+          }
+          const session = await loadWorkoutSession(workoutSessionId);
+          if (cancelled) return;
+          const loadedPlan = normalizeBackendWorkoutSession(session);
+          setWorkoutState({ status: "ready", workoutPlan: loadedPlan, error: "" });
+          setRestDurations(loadedPlan.exercises.map((exercise) => exercise.rest));
+          setSessionLog(loadedPlan.exercises.map((exercise) => exercise.sets.map((set) => ({ ...set }))));
+          postWorkoutEvent(workoutSessionId, "session_opened", { source: "workout-trainer-prototype" }).catch((error) => {
+            console.warn("Could not sync session_opened", error);
+          });
+          return;
+        }
+
+        if (onboardingMemberId && token) {
+          await exchangeMagicToken(token);
+          removeTokenFromUrl();
+        }
+
         const loadedPlan = loadWorkoutPayload();
+        if (cancelled) return;
         if (!loadedPlan) {
           setWorkoutState({ status: "empty", workoutPlan: null, error: "" });
           return;
@@ -427,21 +568,31 @@ function App() {
         setRestDurations(loadedPlan.exercises.map((exercise) => exercise.rest));
         setSessionLog(loadedPlan.exercises.map((exercise) => exercise.sets.map((set) => ({ ...set }))));
       } catch (error) {
+        if (cancelled) return;
+        const message = error?.status === 410
+          ? "This link has expired. Message your coach on WhatsApp for a fresh one."
+          : error?.status === 401
+            ? "This link needs a valid WhatsApp login. Open the latest link from your coach."
+            : error instanceof Error ? error.message : "Could not load workout.";
         setWorkoutState({
           status: "error",
           workoutPlan: null,
-          error: error instanceof Error ? error.message : "Could not load workout.",
+          error: message,
         });
       }
     }, 260);
 
-    return () => window.clearTimeout(timer);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
   }, []);
 
   useEffect(() => () => window.clearTimeout(onboardingBuildTimeoutRef.current), []);
 
   useEffect(() => {
     if (!isBuildingPlan) return undefined;
+    if (getRouteMatch("onboarding")) return undefined;
     window.clearTimeout(onboardingBuildTimeoutRef.current);
     onboardingBuildTimeoutRef.current = window.setTimeout(() => {
       publishOnboardingProfile(onboardingProfile);
@@ -560,11 +711,19 @@ function App() {
   function startWorkout(index = 0) {
     setActiveExercise(index);
     setActiveSet(0);
+    sendWorkoutEvent("session_started", { exercise_index: index });
     setScreen("workout");
   }
 
   function logSet() {
     setCompleted((previous) => ({ ...previous, [`${activeExercise}-${activeSet}`]: true }));
+    sendWorkoutEvent("set_completed", {
+      exercise_index: activeExercise,
+      exercise_name: current.name,
+      set_index: activeSet,
+      reps: currentSet.reps,
+      weight: currentSet.weight,
+    });
     setRestSeconds(currentRest);
     if (nextTarget && nextTarget.exercise !== activeExercise) {
       setScreen("exerciseDone");
@@ -584,6 +743,7 @@ function App() {
       const result = createSessionResult({ workoutPlan: displayedPlan, sessionLog, completed, restDurations });
       setSessionResult(result);
       publishSessionResult(result);
+      sendWorkoutEvent("session_completed", result);
       setScreen("complete");
       return;
     }
@@ -618,6 +778,29 @@ function App() {
       setOnboardingStep((value) => value + 1);
       return;
     }
+    const onboardingMemberId = getRouteMatch("onboarding");
+    if (onboardingMemberId) {
+      setIsBuildingPlan(true);
+      submitOnboarding(onboardingMemberId, onboardingPayloadFromProfile(onboardingProfile))
+        .then((result) => {
+          publishOnboardingProfile(onboardingProfile);
+          if (result?.workoutUrl) {
+            window.location.assign(result.workoutUrl);
+            return;
+          }
+          setIsBuildingPlan(false);
+          setWorkoutState({ status: "error", workoutPlan: null, error: "Onboarding finished, but no workout link came back." });
+        })
+        .catch((error) => {
+          setIsBuildingPlan(false);
+          setWorkoutState({
+            status: "error",
+            workoutPlan: null,
+            error: error instanceof Error ? error.message : "Could not submit onboarding.",
+          });
+        });
+      return;
+    }
     window.sessionStorage.setItem(buildPlanStorageKey, "1");
     setIsBuildingPlan(true);
   }
@@ -626,6 +809,34 @@ function App() {
     if (onboardingStep > 0) {
       setOnboardingStep((value) => value - 1);
     }
+  }
+
+  function sendWorkoutEvent(eventType, payload = {}) {
+    const sessionId = displayedPlan.backendSession?.session_id;
+    if (!sessionId) return;
+    postWorkoutEvent(sessionId, eventType, { ...payload, source: "workout-trainer-prototype" }).catch((error) => {
+      console.warn(`Could not sync ${eventType}`, error);
+    });
+  }
+
+  function reportPain() {
+    sendWorkoutEvent("pain_reported", {
+      exercise_index: activeExercise,
+      exercise_name: current.name,
+      set_index: activeSet,
+    });
+    setWorkoutState((previous) => ({
+      ...previous,
+      workoutPlan: previous.workoutPlan
+        ? {
+            ...previous.workoutPlan,
+            backendSession: {
+              ...previous.workoutPlan.backendSession,
+              safety_state: "human_escalation",
+            },
+          }
+        : previous.workoutPlan,
+    }));
   }
 
   return (
@@ -674,6 +885,7 @@ function App() {
               progress={progress}
               updateSet={updateSet}
               setActiveSet={setActiveSet}
+              reportPain={reportPain}
               logSet={logSet}
               setScreen={setScreen}
             />
@@ -715,6 +927,7 @@ function App() {
               updateSet={updateSet}
               setActiveSet={setActiveSet}
               onSaveEdit={() => setScreen(editReturnScreen)}
+              reportPain={reportPain}
               logSet={logSet}
               setScreen={setScreen}
             />
@@ -1256,6 +1469,7 @@ function WorkoutScreen({
   updateSet,
   setActiveSet,
   onSaveEdit,
+  reportPain,
   logSet,
   setScreen,
 }) {
@@ -1352,6 +1566,12 @@ function WorkoutScreen({
           onPlus={() => updateSet("reps", 1)}
         />
       </section>
+
+      {!editingMode && (
+        <button className="secondary-action pain-action" onClick={reportPain}>
+          REPORT PAIN
+        </button>
+      )}
 
       <button
         className={`primary-action sticky-action ${logFeedback ? "is-logging" : ""}`}

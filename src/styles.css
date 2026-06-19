@@ -1651,6 +1651,13 @@ button {
   text-transform: uppercase;
 }
 
+.pain-action {
+  width: calc(100% - 36px);
+  margin: 12px 18px 0;
+  color: #ffdad9;
+  background: #2a1515;
+}
+
 .exercise-done-focus {
   flex: 1;
   min-height: 420px;
