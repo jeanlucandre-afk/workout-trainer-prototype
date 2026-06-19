@@ -194,7 +194,7 @@ const onboardingSteps = [
     insight: "Avoidance rules make the plan safer, not softer.",
     tone: "guardrails",
     type: "multi",
-    options: ["High-impact jumping", "Running", "Deep loaded squats", "Overhead pressing", "Burpees"],
+    options: ["High-impact jumping", "Running", "Deep loaded squats", "Leg press", "Overhead pressing", "Burpees"],
   },
   {
     eyebrow: "Gym setup",
