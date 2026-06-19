@@ -19,9 +19,11 @@ The chatbot owns the conversation and plan generation. This frontend owns the fo
 ## Live Routes
 
 - Workout plan and gym app: `https://workout-trainer-prototype.vercel.app/`
-- Onboarding intake: `https://workout-trainer-prototype.vercel.app/onboarding`
+- Signed workout links: `https://workout-trainer-prototype.vercel.app/workout/:sessionId?token=...`
+- Signed onboarding links: `https://workout-trainer-prototype.vercel.app/onboarding/:memberId?token=...`
 
-Cloudflare Pages project was created as `workout-trainer-prototype`, but the first asset upload hit Cloudflare API `502 Bad Gateway` responses on `POST /pages/assets/upload`. The repo already includes the Cloudflare Pages route fallback in `public/_redirects`, so deployment can be retried without code changes.
+The backend API is `https://ai-personal-trainer-whatsapp-mvp.vercel.app`.
+Production uses Vercel rewrites so `/api/*` on this website proxies to that backend.
 
 ## Local Development
 
@@ -70,57 +72,72 @@ design-qa.md                  Prior visual QA notes
 
 ## Routes
 
-The app has two browser routes:
+The app has four browser route shapes:
 
-- `/` loads the workout plan and execution app.
-- `/onboarding` loads the intake flow.
+- `/` loads the local demo workout only.
+- `/onboarding` loads the local demo onboarding only.
+- `/onboarding/:memberId?token=...` exchanges the backend magic token, removes it from the URL, submits onboarding to `/api/onboarding/:memberId/submit`, and redirects to a generated workout session.
+- `/workout/:sessionId?token=...` exchanges the backend magic token, removes it from the URL, fetches `/api/workout-sessions/:sessionId`, and renders that member's session JSON.
 
 The route is controlled client-side in `src/main.jsx`. Hosting needs a fallback to `index.html` for browser refreshes and direct links:
 
 - Vercel: `vercel.json`
 - Cloudflare Pages: `public/_redirects`
 
-## Chatbot Integration
+## Backend Integration
 
-The frontend expects structured workout JSON, not free-form workout text. The fastest integration path is:
+The frontend is a thin client. It does not own WhatsApp, AI generation, schedules, memory, or long-term state.
 
-1. The chatbot collects onboarding data from `/onboarding`.
-2. The chatbot generates one structured workout plan.
-3. The host page injects the workout into the frontend.
-4. The frontend emits a completed session result.
-5. The chatbot stores or summarizes the result.
+Runtime flow:
 
-Supported workout injection methods:
+1. WhatsApp/backend sends a signed link to `/onboarding/:memberId?token=...` or `/workout/:sessionId?token=...`.
+2. The app calls `POST /api/auth/link/exchange` with `credentials: include`.
+3. The backend validates expiry and identity, then sets a secure browser session cookie.
+4. The app removes `token` from the browser URL.
+5. Workout pages call `GET /api/workout-sessions/:sessionId`.
+6. Workout actions call `POST /api/workout-sessions/:sessionId/events`.
 
-```js
-window.__SETLINE_WORKOUT__ = workoutPlan;
+The app never consumes raw AI output directly. AI output is validated and normalized by the backend before it is exposed as website-safe workout-session JSON.
+
+API base behavior:
+
+- In local dev, requests default to `http://localhost:8787`.
+- In production, requests default to the current website origin so Vercel rewrites handle `/api/*`.
+- `VITE_API_BASE_URL` can override this for previews or custom environments.
+
+## Production Smoke Tests
+
+Copy `.env.example` to `.env` if you want local defaults, or pass values inline.
+Production smokes require `SMOKE_ADMIN_API_KEY` because they create signed demo/onboarding links through protected backend endpoints.
+
+```bash
+SMOKE_ADMIN_API_KEY=... npm run smoke:onboarding-production
+SMOKE_ADMIN_API_KEY=... npm run smoke:production
 ```
 
-```js
-localStorage.setItem("setline.workoutPlan", JSON.stringify(workoutPlan));
+These scripts verify the real deployed backend and website:
+
+- onboarding magic-link exchange
+- token stripping
+- onboarding profile submission
+- profile-to-workout mapping
+- workout session fetch
+- session opened/started events
+- pain-report safety state
+- set completion flow
+- completed session state
+- unauthenticated session blocking
+
+For local convenience when the backend repo sits beside this project, you can source the backend `.env` and pass only the admin key into the smoke:
+
+```bash
+set -a
+source "/Users/jean-luc1515/Documents/Gym thing/ai-personal-trainer-whatsapp-mvp/.env"
+set +a
+SMOKE_ADMIN_API_KEY="$ADMIN_API_KEY" npm run smoke:production
 ```
 
-```js
-window.dispatchEvent(new CustomEvent("setline:workout", { detail: workoutPlan }));
-```
-
-```js
-window.postMessage({ type: "setline:workout", payload: workoutPlan });
-```
-
-Completion events:
-
-```js
-window.addEventListener("setline:onboarding-complete", (event) => {
-  console.log(event.detail);
-});
-
-window.addEventListener("setline:session-complete", (event) => {
-  console.log(event.detail);
-});
-```
-
-Read the full contract in [CHATBOT_HANDOFF.md](./CHATBOT_HANDOFF.md).
+Do not use these as live WhatsApp proof. They verify web/backend behavior only; live WhatsApp proof is owned by the backend repo's guarded smoke script.
 
 ## Minimal Workout Payload
 
@@ -179,29 +196,11 @@ npm run build
 npx vercel@latest deploy --prod --yes
 ```
 
-Cloudflare Pages:
-
-```bash
-npm run build
-npx wrangler@latest pages deploy dist --project-name workout-trainer-prototype --branch main
-```
-
-Cloudflare setup already done locally:
-
-- Wrangler login completed.
-- Pages project created: `workout-trainer-prototype`
-- Public Pages domain reserved: `https://workout-trainer-prototype.pages.dev/`
-
-Current Cloudflare blocker:
-
-- Asset upload endpoint returned `502 Bad Gateway`.
-- Retry the deploy command above when Cloudflare upload is healthy.
-
 ## Notes For The Next Developer
 
 - Keep the frontend as a single-plan executor. Do not add a plan builder/profile manager here unless the product direction changes.
 - The chatbot should own plan generation and long-term memory.
-- The frontend should stay simple: receive plan, run plan, emit result.
+- The frontend should stay simple: exchange signed links, fetch session JSON, run the workout, and post events.
 - Keep units explicit if adding pounds later. The UI currently assumes KG.
 - Add stable `plan.id`, `chatbotRequestId`, and `exercise.id` fields in backend-generated data.
-- Validate generated plans before injecting them into the UI.
+- Validate generated plans in the backend before exposing them to the UI.
