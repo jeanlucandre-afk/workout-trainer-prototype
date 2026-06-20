@@ -261,7 +261,9 @@ Good future backend additions:
 Use this prompt to generate one exercise image that matches the current app style:
 
 ```text
-Create a single square 1:1 exercise demo image for [EXERCISE_NAME] in the exact same style as the Setline generated workout assets: dark charcoal/black premium gym, minimalist Gymshark-inspired, grayscale photography-like render, high contrast, athlete in black training clothes, no text, no logos, no watermark, no bright colors, no decorative glow, rounded-corner composition safe for mobile app cropping.
+Create a single square 1:1 exercise demo image for [EXERCISE_NAME] in the exact same style as the original Setline generated workout assets: dark charcoal/black premium gym, minimalist Gymshark-inspired, cinematic photography-like render, high contrast, athlete in black training clothes and black or very dark training shoes, natural human skin tones visible, muted warm skin color, mostly dark neutral environment, no text, no logos, no watermark, no bright colors, no decorative glow, rounded-corner composition safe for mobile app cropping.
+
+Important color direction: do not make the image black-and-white or grayscale. Keep the gym, clothes, shoes, and background very dark, but preserve realistic skin color like the original Leg Press, Hamstring Curl, and Cable Crunch assets. Avoid white shoes, bright soles, bright socks, or light footwear.
 
 Show the exercise accurately: [EXERCISE_SPECIFIC_BODY_POSITION_AND_MACHINE_DETAILS]. Keep the full machine, cable, bench, or implement visible enough to identify the movement. Center the athlete, make the key joint positions clear, and keep the image readable as both a circular thumbnail and a full-width workout image.
 ```
@@ -269,7 +271,7 @@ Show the exercise accurately: [EXERCISE_SPECIFIC_BODY_POSITION_AND_MACHINE_DETAI
 Batch prompt:
 
 ```text
-Create [N] separate square 1:1 mobile app exercise demo images in one consistent minimalist Gymshark-inspired style: dark charcoal/black premium gym, grayscale photography-like render, high contrast, athlete in black training clothes, no text, no logos, no watermark, no bright colors, no decorative glow. Each image must clearly show the correct exercise form, equipment, and body position. Exercises: [LIST_EXERCISES_WITH_ONE_SENTENCE_FORM_DESCRIPTION_EACH].
+Create [N] separate square 1:1 mobile app exercise demo images in one consistent minimalist Gymshark-inspired style: dark charcoal/black premium gym, cinematic photography-like render, high contrast, athlete in black training clothes and black or very dark training shoes, natural human skin tones visible, muted warm skin color, mostly dark neutral environment, no text, no logos, no watermark, no bright colors, no decorative glow. Do not make the images black-and-white or grayscale. Avoid white shoes, bright soles, bright socks, or light footwear. Each image must clearly show the correct exercise form, equipment, and body position. Exercises: [LIST_EXERCISES_WITH_ONE_SENTENCE_FORM_DESCRIPTION_EACH].
 ```
 
 Asset workflow:

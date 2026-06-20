@@ -2,7 +2,8 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const outputDir = fileURLToPath(new URL("../public/exercises/", import.meta.url));
+const outputDir = process.env.EXERCISE_IMAGE_OUTPUT_DIR
+  || fileURLToPath(new URL("../public/exercises/", import.meta.url));
 const apiKey = process.env.OPENAI_API_KEY;
 const modelCandidates = (process.env.OPENAI_IMAGE_MODEL || "gpt-image-1.5,gpt-image-1")
   .split(",")
@@ -16,12 +17,13 @@ if (!apiKey) {
 
 const stylePrompt = [
   "Create a single square 1:1 exercise demo image for [EXERCISE_NAME] in the exact same style as the Setline generated workout assets:",
-  "dark charcoal/black premium gym, minimalist Gymshark-inspired, grayscale photography-like render, high contrast, athlete in black training clothes, no text, no logos, no watermark, no bright colors, no decorative glow, rounded-corner composition safe for mobile app cropping.",
+  "dark charcoal/black premium gym, minimalist Gymshark-inspired, cinematic photography-like render, high contrast, athlete in black training clothes and black or very dark training shoes, natural human skin tones visible, muted warm skin color, mostly dark neutral environment, no text, no logos, no watermark, no bright colors, no decorative glow, rounded-corner composition safe for mobile app cropping.",
+  "Important color direction: do not make the image black-and-white or grayscale. Keep the gym, clothes, shoes, and background very dark, but preserve realistic skin color like the original Leg Press, Hamstring Curl, and Cable Crunch assets. Avoid white shoes, bright soles, bright socks, or light footwear.",
   "",
   "Show the exercise accurately: [EXERCISE_SPECIFIC_BODY_POSITION_AND_MACHINE_DETAILS]. Keep the full machine, cable, bench, or implement visible enough to identify the movement. Center the athlete, make the key joint positions clear, and keep the image readable as both a circular thumbnail and a full-width workout image."
 ].join(" ");
 
-const exercises = [
+const exerciseCatalog = [
   {
     slug: "leg-press",
     name: "Leg Press",
@@ -128,6 +130,20 @@ const exercises = [
     form: "athlete standing with two dumbbells curling upward, elbows close to sides, neutral posture, dumbbells clearly visible."
   }
 ];
+
+const requestedSlugs = (process.env.EXERCISE_IMAGE_SLUGS || "")
+  .split(",")
+  .map((slug) => slug.trim())
+  .filter(Boolean);
+const exercises = requestedSlugs.length
+  ? exerciseCatalog.filter((exercise) => requestedSlugs.includes(exercise.slug))
+  : exerciseCatalog;
+
+if (requestedSlugs.length && exercises.length !== requestedSlugs.length) {
+  const known = new Set(exerciseCatalog.map((exercise) => exercise.slug));
+  const missing = requestedSlugs.filter((slug) => !known.has(slug));
+  throw new Error(`Unknown exercise slugs: ${missing.join(", ")}`);
+}
 
 mkdirSync(outputDir, { recursive: true });
 
