@@ -47,6 +47,10 @@ async function completeOnboarding(page) {
   await choose(page, /Feel confident in the gym/i);
   await clickNext(page);
   await clickNext(page);
+  await choose(page, /^Mon$/i);
+  await choose(page, /^Wed$/i);
+  await choose(page, /^Fri$/i);
+  await clickNext(page);
   await choose(page, /Beginner/i);
   await clickNext(page);
   await choose(page, /Machines/i);

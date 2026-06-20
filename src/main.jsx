@@ -87,6 +87,7 @@ const onboardingDefaults = {
   goalDetails: [],
   timeline: "",
   trainingDays: 3,
+  availableDays: [],
   sessionLength: 60,
   experience: "",
   trainingStyle: [],
@@ -156,6 +157,17 @@ const onboardingSteps = [
       { key: "trainingDays", label: "Days/week", unit: "days", min: 1, max: 7, step: 1 },
       { key: "sessionLength", label: "Session", unit: "min", min: 20, max: 120, step: 5 },
     ],
+  },
+  {
+    eyebrow: "Availability",
+    title: "Which days can you train?",
+    copy: "The coach will schedule the two-week split onto the exact days you can realistically show up.",
+    key: "availableDays",
+    phase: "Schedule",
+    insight: "Specific days turn a routine into a calendar.",
+    tone: "schedule",
+    type: "multi",
+    options: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
   },
   {
     eyebrow: "Training",
@@ -409,7 +421,10 @@ function normalizeBackendWorkoutSession(session) {
 function onboardingPayloadFromProfile(profile) {
   const injuryValues = [...(profile.pains || []), ...(profile.pastInjuries || [])]
     .filter((item) => item && !String(item).toLowerCase().startsWith("no "));
-  const schedule = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].slice(0, profile.trainingDays || 3);
+  const selectedDays = profile.availableDays || [];
+  const schedule = selectedDays.length
+    ? selectedDays.slice(0, profile.trainingDays || selectedDays.length)
+    : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].slice(0, profile.trainingDays || 3);
   const experience = String(profile.experience || "").toLowerCase();
   const trainingLevel = experience.includes("advanced")
     ? "advanced"
@@ -442,6 +457,7 @@ function onboardingPayloadFromProfile(profile) {
       weight_kg: profile.weight,
       sleep_hours: profile.sleep,
       training_style: profile.trainingStyle,
+      available_days: profile.availableDays,
       equipment: profile.equipment,
       lifestyle: profile.lifestyle,
     },
