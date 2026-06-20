@@ -183,7 +183,7 @@ Current local generated assets:
 - `public/exercises/leg-press.png`
 - `public/exercises/hamstring-curl.png`
 - `public/exercises/cable-crunch.png`
-- `public/exercises/*.svg` for the expanded 20+ exercise library
+- `public/exercises/*.png` for the expanded 20+ exercise library
 - `public/exercises/exercise-placeholder.svg`
 
 To add a new exercise image:

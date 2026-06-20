@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
     "assets:exercises": "node scripts/generate-exercise-assets.mjs",
+    "assets:exercises:openai": "node scripts/generate-exercise-images-openai.mjs",
     "smoke:link-errors": "node scripts/link-error-smoke.mjs",
     "smoke:onboarding-production": "node scripts/onboarding-production-smoke.mjs",
     "smoke:production": "node scripts/production-smoke.mjs",

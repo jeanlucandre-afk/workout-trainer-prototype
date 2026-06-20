@@ -23,26 +23,26 @@ const exerciseImageMap = {
   "leg curl": "/exercises/hamstring-curl.png",
   "cable crunch": "/exercises/cable-crunch.png",
   "kneeling cable crunch": "/exercises/cable-crunch.png",
-  "chest press": "/exercises/chest-press.svg",
-  "lat pulldown": "/exercises/lat-pulldown.svg",
-  "seated cable row": "/exercises/seated-cable-row.svg",
-  "dumbbell romanian deadlift": "/exercises/dumbbell-romanian-deadlift.svg",
-  "romanian deadlift with dumbbells": "/exercises/dumbbell-romanian-deadlift.svg",
-  "goblet squat to box": "/exercises/goblet-squat-to-box.svg",
-  "dumbbell floor press": "/exercises/dumbbell-floor-press.svg",
-  "pallof press": "/exercises/pallof-press.svg",
-  "side plank": "/exercises/side-plank.svg",
-  "bike intervals": "/exercises/bike-intervals.svg",
-  "crosstrainer intervals": "/exercises/crosstrainer-intervals.svg",
-  "dumbbell shoulder press": "/exercises/dumbbell-shoulder-press.svg",
-  "dumbbell lateral raise": "/exercises/dumbbell-lateral-raise.svg",
-  "cable face pull": "/exercises/cable-face-pull.svg",
-  "dumbbell split squat": "/exercises/dumbbell-split-squat.svg",
-  "glute bridge": "/exercises/glute-bridge.svg",
-  "dumbbell bench row": "/exercises/dumbbell-bench-row.svg",
-  "standing cable triceps pressdown": "/exercises/triceps-pressdown.svg",
-  "triceps pressdown": "/exercises/triceps-pressdown.svg",
-  "dumbbell curl": "/exercises/dumbbell-curl.svg",
+  "chest press": "/exercises/chest-press.png",
+  "lat pulldown": "/exercises/lat-pulldown.png",
+  "seated cable row": "/exercises/seated-cable-row.png",
+  "dumbbell romanian deadlift": "/exercises/dumbbell-romanian-deadlift.png",
+  "romanian deadlift with dumbbells": "/exercises/dumbbell-romanian-deadlift.png",
+  "goblet squat to box": "/exercises/goblet-squat-to-box.png",
+  "dumbbell floor press": "/exercises/dumbbell-floor-press.png",
+  "pallof press": "/exercises/pallof-press.png",
+  "side plank": "/exercises/side-plank.png",
+  "bike intervals": "/exercises/bike-intervals.png",
+  "crosstrainer intervals": "/exercises/crosstrainer-intervals.png",
+  "dumbbell shoulder press": "/exercises/dumbbell-shoulder-press.png",
+  "dumbbell lateral raise": "/exercises/dumbbell-lateral-raise.png",
+  "cable face pull": "/exercises/cable-face-pull.png",
+  "dumbbell split squat": "/exercises/dumbbell-split-squat.png",
+  "glute bridge": "/exercises/glute-bridge.png",
+  "dumbbell bench row": "/exercises/dumbbell-bench-row.png",
+  "standing cable triceps pressdown": "/exercises/triceps-pressdown.png",
+  "triceps pressdown": "/exercises/triceps-pressdown.png",
+  "dumbbell curl": "/exercises/dumbbell-curl.png",
 };
 
 const fallbackExerciseImage = "/exercises/exercise-placeholder.svg";
@@ -1217,7 +1217,6 @@ function App() {
               sessionResult={sessionResult}
               completedSets={completedSets}
               totalSets={totalSets}
-              startWorkout={startWorkout}
               allDone={allDone}
             />
           )}
@@ -2349,24 +2348,28 @@ function sessionLabel(exercise, setIndex) {
   return `${set.reps} reps · ${formatWeight(set.weight)}`;
 }
 
-function CompleteScreen({ sessionResult, completedSets, totalSets, startWorkout }) {
+function openWhatsAppSummaryPrompt() {
+  if (typeof window === "undefined") return;
+  window.location.href = "whatsapp://send?text=Ready%20summarize%20my%20results";
+}
+
+function CompleteScreen({ sessionResult, completedSets, totalSets }) {
+  const completedExercises = sessionResult?.exercises?.filter((exercise) => exercise.completedSets > 0) || [];
   return (
     <div className="page complete-page">
       <header className="top-row">
-        <button className="icon-button" aria-label="Back">
-          <ChevronLeft size={32} />
-        </button>
+        <div className="top-spacer" aria-hidden="true" />
         <BrandMark />
         <div className="plan-chip">Done</div>
       </header>
       <section className="rest-focus reveal">
         <span>Workout complete</span>
         <h1>{completedSets}/{totalSets}</h1>
-        <p>All planned sets are logged. The chatbot can now summarize progress.</p>
+        <p>Your sets, reps, weights, and volume are saved. Go back to WhatsApp for the recap.</p>
       </section>
       {sessionResult && (
         <section className="result-card reveal" aria-label="Session result sent to chatbot">
-          <span>Result object ready</span>
+          <span>Workout summary saved</span>
           <div>
             <strong>{sessionResult.totalVolume.toLocaleString()}</strong>
             <small>Total volume</small>
@@ -2377,8 +2380,23 @@ function CompleteScreen({ sessionResult, completedSets, totalSets, startWorkout 
           </div>
         </section>
       )}
-      <button className="primary-action sticky-action" onClick={() => startWorkout(0)}>
-        REVIEW PLAN
+      {completedExercises.length > 0 && (
+        <section className="completion-list reveal" aria-label="Completed exercise summary">
+          {completedExercises.slice(0, 5).map((exercise) => (
+            <article key={exercise.name}>
+              <strong>{exercise.name}</strong>
+              <span>{exercise.completedSets}/{exercise.totalSets} sets · {exercise.volume.toLocaleString()} volume</span>
+            </article>
+          ))}
+        </section>
+      )}
+      <section className="whatsapp-return-card reveal">
+        <span>Next step</span>
+        <strong>Return to WhatsApp</strong>
+        <p>Text: Ready summarize my results</p>
+      </section>
+      <button className="primary-action sticky-action" onClick={openWhatsAppSummaryPrompt}>
+        OPEN WHATSAPP
       </button>
     </div>
   );
