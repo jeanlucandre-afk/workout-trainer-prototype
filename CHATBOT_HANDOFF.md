@@ -126,7 +126,26 @@ Current image aliases:
   "lying hamstring curl": "/exercises/hamstring-curl.png",
   "leg curl": "/exercises/hamstring-curl.png",
   "cable crunch": "/exercises/cable-crunch.png",
-  "kneeling cable crunch": "/exercises/cable-crunch.png"
+  "kneeling cable crunch": "/exercises/cable-crunch.png",
+  "chest press": "/exercises/chest-press.svg",
+  "lat pulldown": "/exercises/lat-pulldown.svg",
+  "seated cable row": "/exercises/seated-cable-row.svg",
+  "dumbbell romanian deadlift": "/exercises/dumbbell-romanian-deadlift.svg",
+  "goblet squat to box": "/exercises/goblet-squat-to-box.svg",
+  "dumbbell floor press": "/exercises/dumbbell-floor-press.svg",
+  "pallof press": "/exercises/pallof-press.svg",
+  "side plank": "/exercises/side-plank.svg",
+  "bike intervals": "/exercises/bike-intervals.svg",
+  "crosstrainer intervals": "/exercises/crosstrainer-intervals.svg",
+  "dumbbell shoulder press": "/exercises/dumbbell-shoulder-press.svg",
+  "dumbbell lateral raise": "/exercises/dumbbell-lateral-raise.svg",
+  "cable face pull": "/exercises/cable-face-pull.svg",
+  "dumbbell split squat": "/exercises/dumbbell-split-squat.svg",
+  "glute bridge": "/exercises/glute-bridge.svg",
+  "dumbbell bench row": "/exercises/dumbbell-bench-row.svg",
+  "standing cable triceps pressdown": "/exercises/triceps-pressdown.svg",
+  "triceps pressdown": "/exercises/triceps-pressdown.svg",
+  "dumbbell curl": "/exercises/dumbbell-curl.svg"
 }
 ```
 
@@ -255,11 +274,12 @@ Create [N] separate square 1:1 mobile app exercise demo images in one consistent
 
 Asset workflow:
 
-1. Save each image to `public/exercises/[exercise-slug].png`.
-2. If generated as one multi-panel image, crop each panel into a separate square PNG first.
-3. Keep the dark style and avoid text inside the image.
-4. Add aliases to `exerciseImageMap` in `src/main.jsx`.
-5. If an exercise has no matching image yet, let it fall back to `public/exercises/exercise-placeholder.svg`.
+1. For generated bitmap assets, save each image to `public/exercises/[exercise-slug].png`.
+2. For local SVG assets, update `scripts/generate-exercise-assets.mjs` and run `npm run assets:exercises`.
+3. If generated as one multi-panel image, crop each panel into a separate square image first.
+4. Keep the dark style and avoid text inside the image.
+5. Add aliases to `exerciseImageMap` in `src/main.jsx`.
+6. If an exercise has no matching image yet, let it fall back to `public/exercises/exercise-placeholder.svg`.
 
 ```js
 const exerciseImageMap = {

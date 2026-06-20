@@ -183,12 +183,13 @@ Current local generated assets:
 - `public/exercises/leg-press.png`
 - `public/exercises/hamstring-curl.png`
 - `public/exercises/cable-crunch.png`
+- `public/exercises/*.svg` for the expanded 20+ exercise library
 - `public/exercises/exercise-placeholder.svg`
 
 To add a new exercise image:
 
 1. Generate a square 1:1 image in the same dark minimalist style.
-2. Save it to `public/exercises/[exercise-slug].png`.
+2. Save it to `public/exercises/[exercise-slug].png`, or update `scripts/generate-exercise-assets.mjs` and run `npm run assets:exercises` for local SVG assets.
 3. Add aliases to `exerciseImageMap` in `src/main.jsx`.
 4. Keep fallback behavior for exercises without images.
 

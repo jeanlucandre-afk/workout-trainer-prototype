@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 900" role="img" aria-label="Exercise demo">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="32%" r="70%">
+      <stop offset="0%" stop-color="#2b2b2e"/>
+      <stop offset="54%" stop-color="#101113"/>
+      <stop offset="100%" stop-color="#050505"/>
+    </radialGradient>
+    <linearGradient id="metal" x1="0" x2="1">
+      <stop offset="0%" stop-color="#3d3d42"/>
+      <stop offset="100%" stop-color="#7d7d84"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="900" rx="72" fill="url(#bg)"/>
+  <path d="M112 720 C244 650 336 652 450 720 C554 782 668 784 792 718" fill="none" stroke="#1f2023" stroke-width="48" stroke-linecap="round"/>
+  <g stroke="#86878e" stroke-width="18" stroke-linecap="round">
+      <path d="M180 708 H320 M580 708 H720"/>
+      <path d="M205 674 V742 M295 674 V742 M605 674 V742 M695 674 V742"/>
+      <rect x="352" y="520" width="196" height="52" rx="18" fill="#1b1c1f" stroke="#55565c" stroke-width="12"/>
+    </g>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="360" cy="600" r="40" fill="#d5d5d8"/>
+    <path d="M405 600 L570 600" stroke="#d5d5d8" stroke-width="38"/>
+    <path d="M490 594 L490 448 M530 594 L530 448" stroke="#d5d5d8" stroke-width="30"/>
+    <path d="M560 600 L680 690 M560 600 L675 535" stroke="#d5d5d8" stroke-width="34"/>
+    <path d="M160 760 H740" stroke="#303136" stroke-width="20"/>
+  </g>
+</svg>

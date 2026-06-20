@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 900" role="img" aria-label="Exercise demo">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="32%" r="70%">
+      <stop offset="0%" stop-color="#2b2b2e"/>
+      <stop offset="54%" stop-color="#101113"/>
+      <stop offset="100%" stop-color="#050505"/>
+    </radialGradient>
+    <linearGradient id="metal" x1="0" x2="1">
+      <stop offset="0%" stop-color="#3d3d42"/>
+      <stop offset="100%" stop-color="#7d7d84"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="900" rx="72" fill="url(#bg)"/>
+  <path d="M112 720 C244 650 336 652 450 720 C554 782 668 784 792 718" fill="none" stroke="#1f2023" stroke-width="48" stroke-linecap="round"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M210 150 V720 M690 150 V720 M210 150 H690" stroke="url(#metal)" stroke-width="22"/>
+      <path d="M676 188 C610 300 548 400 492 510" stroke="#b9b9bd" stroke-width="7"/>
+      <circle cx="676" cy="188" r="22" fill="#1f2023" stroke="#86878e" stroke-width="10"/>
+    </g>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="430" cy="340" r="40" fill="#d5d5d8"/>
+    <path d="M428 390 L428 540" stroke="#d5d5d8" stroke-width="38"/>
+    <path d="M428 430 L592 430 M428 462 L592 462" stroke="#d5d5d8" stroke-width="30"/>
+    <path d="M428 540 L352 682 M428 540 L520 682" stroke="#d5d5d8" stroke-width="34"/>
+    <path d="M160 760 H740" stroke="#303136" stroke-width="20"/>
+  </g>
+</svg>
