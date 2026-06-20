@@ -42,7 +42,8 @@ async function choose(page, label) {
 async function completeOnboarding(page) {
   await page.getByText(/Start with the basics/i).waitFor({ timeout: 15000 });
   await clickNext(page);
-  await choose(page, /Build muscle/i);
+  await choose(page, /Lose fat \+ build muscle/i);
+  await choose(page, /^Build muscle$/i);
   await clickNext(page);
   await choose(page, /Feel confident in the gym/i);
   await clickNext(page);
@@ -51,22 +52,19 @@ async function completeOnboarding(page) {
   await choose(page, /^Wed$/i);
   await choose(page, /^Fri$/i);
   await clickNext(page);
-  await choose(page, /Beginner/i);
+  await choose(page, /Some fitness experience/i);
   await clickNext(page);
-  await choose(page, /Machines/i);
   await clickNext(page);
   await choose(page, /Knee pain/i);
   await clickNext(page);
   await choose(page, /No major past injury/i);
   await clickNext(page);
-  await choose(page, /Leg press/i);
   await clickNext(page);
-  await choose(page, /Machines/i);
+  await choose(page, /Mostly seated work/i);
   await clickNext(page);
   await choose(page, /Moderate stress/i);
   await clickNext(page);
   await clickNext(page);
-  await choose(page, /Staying consistent/i);
   await clickNext(page);
   await clickNext(page, /Build plan/i);
 }

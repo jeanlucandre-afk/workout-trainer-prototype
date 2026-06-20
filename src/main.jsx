@@ -7,6 +7,8 @@ import {
   Minus,
   Play,
   Plus,
+  RefreshCcw,
+  SkipForward,
   Timer,
   X,
 } from "lucide-react";
@@ -103,7 +105,7 @@ const onboardingDefaults = {
   age: 28,
   height: 175,
   weight: 78,
-  primaryGoal: "",
+  primaryGoal: [],
   goalDetails: [],
   timeline: "",
   trainingDays: 3,
@@ -113,10 +115,13 @@ const onboardingDefaults = {
   trainingStyle: [],
   cardioPreference: "",
   pains: [],
+  otherPain: "",
   pastInjuries: [],
+  otherInjury: "",
   movementsToAvoid: [],
   equipment: [],
   lifestyle: [],
+  stressLevel: "",
   sleep: 7,
   motivation: 8,
   confidence: 6,
@@ -144,10 +149,10 @@ const onboardingSteps = [
     copy: "Pick the main outcome first. The extra goals help the chatbot choose the right training emphasis.",
     key: "primaryGoal",
     phase: "Goals",
-    insight: "The main goal decides the plan bias.",
+    insight: "Goals decide the plan bias.",
     tone: "goals",
-    type: "single",
-    options: ["Lose fat", "Build muscle", "Get stronger", "Improve general fitness"],
+    type: "multi",
+    options: ["Lose fat + build muscle", "Build muscle", "Lose fat", "Improve health and general fitness"],
   },
   {
     eyebrow: "Motivation",
@@ -198,7 +203,7 @@ const onboardingSteps = [
     insight: "Experience controls how technical the workout should be.",
     tone: "training",
     type: "single",
-    options: ["Beginner", "Some gym experience", "Consistent for 6+ months", "Advanced"],
+    options: ["New to fitness", "Some fitness experience", "Consistent for 6+ months", "Advanced"],
   },
   {
     eyebrow: "Preference",
@@ -210,6 +215,7 @@ const onboardingSteps = [
     tone: "training",
     type: "multi",
     options: ["Machines", "Dumbbells", "Barbells", "Bodyweight"],
+    optional: true,
   },
   {
     eyebrow: "Pain",
@@ -221,6 +227,9 @@ const onboardingSteps = [
     tone: "guardrails",
     type: "multi",
     options: ["No pain", "Knee pain", "Lower back tightness", "Shoulder pain", "Hip pain"],
+    textKey: "otherPain",
+    textLabel: "Other pain",
+    textPlaceholder: "Type any other pain or limitation",
   },
   {
     eyebrow: "Injuries",
@@ -232,40 +241,41 @@ const onboardingSteps = [
     tone: "guardrails",
     type: "multi",
     options: ["No major past injury", "Knee injury", "Back injury", "Shoulder injury", "Ankle injury"],
-  },
-  {
-    eyebrow: "Limits",
-    title: "What should we avoid?",
-    copy: "These guardrails keep the plan effective without forcing movements that do not fit your body.",
-    key: "movementsToAvoid",
-    phase: "Guardrails",
-    insight: "Avoidance rules make the plan safer, not softer.",
-    tone: "guardrails",
-    type: "multi",
-    options: ["High-impact jumping", "Running", "Deep loaded squats", "Leg press", "Overhead pressing", "Burpees"],
-  },
-  {
-    eyebrow: "Gym setup",
-    title: "What can you train with?",
-    copy: "The chatbot should only prescribe equipment you can actually access.",
-    key: "equipment",
-    phase: "Setup",
-    insight: "Equipment access decides the exercise library.",
-    tone: "setup",
-    type: "multi",
-    options: ["Full gym", "Machines", "Dumbbells", "Barbells", "Home only"],
+    textKey: "otherInjury",
+    textLabel: "Other injury",
+    textPlaceholder: "Type any previous injury the coach should respect",
   },
   {
     eyebrow: "Recovery",
-    title: "What affects recovery?",
-    copy: "Steps, sleep, stress, and work style decide how aggressive the weekly plan should be.",
+    title: "How much sleep do you get?",
+    copy: "Sleep sets the starting intensity and how aggressively the coach can progress volume.",
+    phase: "Recovery",
+    insight: "Sleep decides how hard the first week should push.",
+    tone: "recovery",
+    type: "metrics",
+    metrics: [{ key: "sleep", label: "Sleep", unit: "h", min: 4, max: 10, step: 0.5 }],
+  },
+  {
+    eyebrow: "Recovery",
+    title: "What does your normal day look like?",
+    copy: "Work and daily movement help the coach avoid overloading you outside the gym.",
     key: "lifestyle",
     phase: "Recovery",
-    insight: "Recovery decides how hard the first week should push.",
+    insight: "Daily load changes workout load.",
     tone: "recovery",
     type: "multi",
-    options: ["Mostly seated work", "Active job", "Low daily steps", "Moderate stress", "High stress"],
-    metrics: [{ key: "sleep", label: "Sleep", unit: "h", min: 4, max: 10, step: 0.5 }],
+    options: ["Mostly seated work", "Active job", "Low daily steps", "High daily steps"],
+  },
+  {
+    eyebrow: "Recovery",
+    title: "How stressful is this season?",
+    copy: "Stress changes how much the plan should push intensity and failure sets.",
+    key: "stressLevel",
+    phase: "Recovery",
+    insight: "Stress is training load too.",
+    tone: "recovery",
+    type: "single",
+    options: ["Low stress", "Moderate stress", "High stress"],
   },
   {
     eyebrow: "Mindset",
@@ -286,10 +296,12 @@ const onboardingSteps = [
     copy: "This gives the chatbot the human reason behind the plan, not only the workout variables.",
     key: "mainConcern",
     phase: "Mindset",
-    insight: "This becomes the coach note at the top of the plan.",
+    insight: "This becomes an optional coach note.",
     tone: "mindset",
-    type: "single",
-    options: ["Staying consistent", "Fear of injury", "Gym confidence", "Losing motivation"],
+    type: "text",
+    textLabel: "Optional note",
+    textPlaceholder: "Example: I hate crowded gyms, keep things simple, avoid public attention",
+    optional: true,
   },
 ];
 
@@ -345,6 +357,22 @@ function matchExerciseImage(name, providedImage) {
   return exerciseImageMap[normalizedName] || fallbackExerciseImage;
 }
 
+function valuesFrom(value) {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  return value ? [value] : [];
+}
+
+function normalizePrepList(items) {
+  if (!Array.isArray(items)) return [];
+  return items
+    .map((item) => {
+      if (typeof item === "string") return item;
+      if (!item || typeof item !== "object") return "";
+      return [item.name, item.duration, item.reps, item.note].filter(Boolean).join(" · ");
+    })
+    .filter(Boolean);
+}
+
 function normalizeWorkoutPlan(input) {
   if (!input || typeof input !== "object") {
     throw new Error("Workout payload is missing.");
@@ -372,6 +400,7 @@ function normalizeWorkoutPlan(input) {
             sets,
             image: matchExerciseImage(exercise.name, exercise.image),
             sourceId: exercise.id || `exercise-${exerciseIndex + 1}`,
+            substitutions: Array.isArray(exercise.substitutions) ? exercise.substitutions : [],
           };
         })
         .filter(Boolean)
@@ -381,14 +410,20 @@ function normalizeWorkoutPlan(input) {
     return null;
   }
 
+  const warmup = normalizePrepList(input.warmup);
+  const cooldown = normalizePrepList(input.cooldown);
+
   return {
     title: String(input.title || "AI workout"),
     source: String(input.source || "AI generated plan"),
     duration: String(input.duration || `${Math.max(20, exercises.length * 14)} min`),
     focus: String(input.focus || "Generated session"),
-    note: String(input.note || "Review the plan, adjust sets, then start when ready."),
+    note: String(input.note || "Adjust sets if needed, then start when ready."),
     chatbotRequestId: input.chatbotRequestId || input.id || "demo-workout",
     backendSession: input.backendSession,
+    warmup: warmup.length ? warmup : ["5 min easy cardio", "2 light ramp-up sets for the first lift"],
+    cooldown: cooldown.length ? cooldown : ["3 min easy walk", "Stretch the trained muscles without forcing range"],
+    safetyNotes: normalizePrepList(input.safetyNotes),
     exercises,
   };
 }
@@ -433,13 +468,21 @@ function normalizeBackendWorkoutSession(session) {
     focus: session.focus,
     note: [session.rationale, ...(session.safety_notes || [])].filter(Boolean).join(" "),
     defaultRest: 75,
+    warmup: session.warmup,
+    cooldown: session.cooldown,
+    safetyNotes: session.safety_notes,
     exercises,
     backendSession: session,
   });
 }
 
 function onboardingPayloadFromProfile(profile) {
-  const injuryValues = [...(profile.pains || []), ...(profile.pastInjuries || [])]
+  const injuryValues = [
+    ...valuesFrom(profile.pains),
+    ...valuesFrom(profile.otherPain),
+    ...valuesFrom(profile.pastInjuries),
+    ...valuesFrom(profile.otherInjury),
+  ]
     .filter((item) => item && !String(item).toLowerCase().startsWith("no "));
   const selectedDays = profile.availableDays || [];
   const schedule = selectedDays.length
@@ -453,10 +496,11 @@ function onboardingPayloadFromProfile(profile) {
       : "beginner";
 
   return {
-    goals: [profile.primaryGoal, ...(profile.goalDetails || [])].filter(Boolean),
+    goals: [...valuesFrom(profile.primaryGoal), ...valuesFrom(profile.goalDetails)].filter(Boolean),
     goalDetails: [
       profile.mainConcern,
       profile.timeline,
+      profile.stressLevel,
       `Motivation ${profile.motivation}/10`,
       `Confidence ${profile.confidence}/10`,
     ].filter(Boolean).join(". "),
@@ -465,7 +509,7 @@ function onboardingPayloadFromProfile(profile) {
     scheduleTime: "18:00",
     sessionDurationMinutes: Number(profile.sessionLength) || 55,
     trainingLevel,
-    equipmentNoGos: profile.movementsToAvoid || [],
+    equipmentNoGos: [],
     motivationStyle: profile.mainConcern || "direct but supportive",
     quietHoursStart: "21:00",
     quietHoursEnd: "08:00",
@@ -478,8 +522,8 @@ function onboardingPayloadFromProfile(profile) {
       sleep_hours: profile.sleep,
       training_style: profile.trainingStyle,
       available_days: profile.availableDays,
-      equipment: profile.equipment,
       lifestyle: profile.lifestyle,
+      stress_level: profile.stressLevel,
     },
   };
 }
@@ -543,6 +587,52 @@ function publishOnboardingProfile(profile) {
   window.dispatchEvent(new CustomEvent("setline:onboarding-complete", { detail: profile }));
 }
 
+function readWorkoutStreak() {
+  if (typeof window === "undefined") return { count: 0, lastDate: "" };
+  try {
+    return JSON.parse(window.localStorage.getItem("setline.workoutStreak") || '{"count":0,"lastDate":""}');
+  } catch {
+    return { count: 0, lastDate: "" };
+  }
+}
+
+function updateWorkoutStreak() {
+  const today = new Date().toISOString().slice(0, 10);
+  const previous = readWorkoutStreak();
+  if (previous.lastDate === today) return previous;
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  const next = {
+    count: previous.lastDate === yesterday ? Number(previous.count || 0) + 1 : 1,
+    lastDate: today,
+  };
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem("setline.workoutStreak", JSON.stringify(next));
+  }
+  return next;
+}
+
+function onboardingStepValue(step, profile) {
+  if (step.textKey) return profile[step.textKey];
+  if (step.key) return profile[step.key];
+  return null;
+}
+
+function isOnboardingStepComplete(step, profile) {
+  if (!step || step.optional || step.type === "metrics") return true;
+  const value = onboardingStepValue(step, profile);
+  if (step.type === "text") return Boolean(String(value || "").trim());
+  if (step.type === "multi") {
+    return valuesFrom(profile[step.key]).length > 0 || Boolean(String(profile[step.textKey] || "").trim());
+  }
+  return Boolean(value);
+}
+
+function onboardingStepError(step) {
+  if (step?.type === "multi") return "Pick at least one option or type your answer.";
+  if (step?.type === "text") return "Type an answer before continuing.";
+  return "Choose an option before continuing.";
+}
+
 function App() {
   const screenRef = useRef(null);
   const onboardingBuildTimeoutRef = useRef(null);
@@ -554,6 +644,7 @@ function App() {
   const [onboardingComplete, setOnboardingComplete] = useState(null);
   const [onboardingStep, setOnboardingStep] = useState(0);
   const [onboardingProfile, setOnboardingProfile] = useState(onboardingDefaults);
+  const [onboardingError, setOnboardingError] = useState("");
   const [activeExercise, setActiveExercise] = useState(0);
   const [activeSet, setActiveSet] = useState(0);
   const [completed, setCompleted] = useState({});
@@ -562,6 +653,8 @@ function App() {
   const [restDurations, setRestDurations] = useState([]);
   const [sessionLog, setSessionLog] = useState([]);
   const [sessionResult, setSessionResult] = useState(null);
+  const [coachNotice, setCoachNotice] = useState("");
+  const [workoutStreak, setWorkoutStreak] = useState(() => readWorkoutStreak());
 
   const workoutPlan = workoutState.workoutPlan;
 
@@ -654,7 +747,8 @@ function App() {
     onboardingBuildTimeoutRef.current = window.setTimeout(() => {
       publishOnboardingProfile(onboardingProfile);
       window.sessionStorage.removeItem(buildPlanStorageKey);
-      setScreen("plan");
+      setOnboardingComplete({ nextAction: "return_to_whatsapp" });
+      setScreen("onboarding");
       setIsBuildingPlan(false);
     }, 3200);
     return () => window.clearTimeout(onboardingBuildTimeoutRef.current);
@@ -675,6 +769,7 @@ function App() {
         setSessionResult(null);
         setActiveExercise(0);
         setActiveSet(0);
+        setCoachNotice("");
         setScreen("plan");
       } catch (error) {
         setWorkoutState({
@@ -713,6 +808,7 @@ function App() {
     setSessionResult(null);
     setActiveExercise(0);
     setActiveSet(0);
+    setCoachNotice("");
     setScreen("plan");
   }
 
@@ -768,6 +864,7 @@ function App() {
   function startWorkout(index = 0) {
     setActiveExercise(index);
     setActiveSet(0);
+    setCoachNotice("");
     sendWorkoutEvent("session_started", { exercise_index: index });
     setScreen("workout");
   }
@@ -800,6 +897,7 @@ function App() {
       const result = createSessionResult({ workoutPlan: displayedPlan, sessionLog, completed, restDurations });
       setSessionResult(result);
       publishSessionResult(result);
+      setWorkoutStreak(updateWorkoutStreak());
       sendWorkoutEvent("session_completed", result);
       setScreen("complete");
       return;
@@ -810,19 +908,31 @@ function App() {
   }
 
   function updateOnboardingValue(key, value, type) {
+    setOnboardingError("");
     setOnboardingProfile((previous) => {
       if (type !== "multi") {
         return { ...previous, [key]: value };
       }
       const currentValues = previous[key] || [];
-      const nextValues = currentValues.includes(value)
+      let nextValues = currentValues.includes(value)
         ? currentValues.filter((item) => item !== value)
         : [...currentValues, value];
+      if (key === "pains" && value === "No pain" && !currentValues.includes(value)) {
+        nextValues = ["No pain"];
+      } else if (key === "pains" && value !== "No pain") {
+        nextValues = nextValues.filter((item) => item !== "No pain");
+      }
+      if (key === "pastInjuries" && value === "No major past injury" && !currentValues.includes(value)) {
+        nextValues = ["No major past injury"];
+      } else if (key === "pastInjuries" && value !== "No major past injury") {
+        nextValues = nextValues.filter((item) => item !== "No major past injury");
+      }
       return { ...previous, [key]: nextValues };
     });
   }
 
   function updateOnboardingMetric(metric, delta) {
+    setOnboardingError("");
     setOnboardingProfile((previous) => {
       const currentValue = Number(previous[metric.key]) || 0;
       const nextValue = Math.min(metric.max, Math.max(metric.min, currentValue + delta));
@@ -832,6 +942,12 @@ function App() {
 
   function nextOnboardingStep() {
     if (onboardingStep < onboardingSteps.length) {
+      const step = onboardingSteps[onboardingStep];
+      if (!isOnboardingStepComplete(step, onboardingProfile)) {
+        setOnboardingError(onboardingStepError(step));
+        return;
+      }
+      setOnboardingError("");
       setOnboardingStep((value) => value + 1);
       return;
     }
@@ -866,6 +982,7 @@ function App() {
   }
 
   function previousOnboardingStep() {
+    setOnboardingError("");
     if (onboardingStep > 0) {
       setOnboardingStep((value) => value - 1);
     }
@@ -899,6 +1016,76 @@ function App() {
     }));
   }
 
+  function moveToNextExercise() {
+    if (activeExercise < displayedPlan.exercises.length - 1) {
+      setActiveExercise((value) => value + 1);
+      setActiveSet(0);
+      setCoachNotice("");
+      setScreen("workout");
+      return;
+    }
+    const result = createSessionResult({ workoutPlan: displayedPlan, sessionLog, completed, restDurations });
+    setSessionResult(result);
+    publishSessionResult(result);
+    setWorkoutStreak(updateWorkoutStreak());
+    sendWorkoutEvent("session_completed", result);
+    setScreen("complete");
+  }
+
+  function skipExercise() {
+    sendWorkoutEvent("exercise_skipped", {
+      exercise_index: activeExercise,
+      exercise_name: current.name,
+    });
+    moveToNextExercise();
+  }
+
+  function requestSubstitution() {
+    const substitution = current.substitutions?.[0];
+    sendWorkoutEvent("substitution_requested", {
+      exercise_index: activeExercise,
+      exercise_name: current.name,
+      requested_reason: "member_requested_swap",
+    });
+
+    if (!substitution) {
+      setCoachNotice("Swap requested. If you need a different movement now, message the coach in WhatsApp.");
+      return;
+    }
+
+    const nextName = typeof substitution === "string" ? substitution : substitution.name || substitution.exercise || "";
+    if (!nextName) {
+      setCoachNotice("Swap requested. If you need a different movement now, message the coach in WhatsApp.");
+      return;
+    }
+
+    const nextCue =
+      typeof substitution === "string"
+        ? `Use this swap instead of ${current.name}. Keep the same sets and stop if it feels wrong.`
+        : substitution.note || substitution.reason || `Use this swap instead of ${current.name}. Keep the same sets.`;
+
+    setWorkoutState((previous) => ({
+      ...previous,
+      workoutPlan: previous.workoutPlan
+        ? {
+            ...previous.workoutPlan,
+            exercises: previous.workoutPlan.exercises.map((exercise, index) =>
+              index === activeExercise
+                ? {
+                    ...exercise,
+                    name: nextName,
+                    cue: nextCue,
+                    image: matchExerciseImage(nextName, substitution.image_url || substitution.image),
+                    substitutions: [],
+                  }
+                : exercise,
+            ),
+          }
+        : previous.workoutPlan,
+    }));
+    setCoachNotice(`Swapped ${current.name} for ${nextName}. Same set target, cleaner fit.`);
+  }
+
   return (
     <main className="app-shell">
       <div className="phone-frame">
@@ -919,6 +1106,7 @@ function App() {
                 updateMetric={updateOnboardingMetric}
                 nextStep={nextOnboardingStep}
                 previousStep={previousOnboardingStep}
+                error={onboardingError}
               />
             )
           )}
@@ -934,6 +1122,7 @@ function App() {
               updatePlannedSet={updatePlannedSet}
               updateRest={updateRest}
               startWorkout={startWorkout}
+              workoutStreak={workoutStreak}
             />
           )}
           {workoutState.status === "ready" && screen === "workout" && (
@@ -950,6 +1139,9 @@ function App() {
               updateSet={updateSet}
               setActiveSet={setActiveSet}
               reportPain={reportPain}
+              skipExercise={skipExercise}
+              requestSubstitution={requestSubstitution}
+              coachNotice={coachNotice}
               logSet={logSet}
               setScreen={setScreen}
             />
@@ -992,6 +1184,9 @@ function App() {
               setActiveSet={setActiveSet}
               onSaveEdit={() => setScreen(editReturnScreen)}
               reportPain={reportPain}
+              skipExercise={skipExercise}
+              requestSubstitution={requestSubstitution}
+              coachNotice={coachNotice}
               logSet={logSet}
               setScreen={setScreen}
             />
@@ -1042,6 +1237,7 @@ function OnboardingScreen({
   updateMetric,
   nextStep,
   previousStep,
+  error,
 }) {
   const isSummary = stepIndex >= onboardingSteps.length;
   const step = onboardingSteps[Math.min(stepIndex, onboardingSteps.length - 1)];
@@ -1070,7 +1266,7 @@ function OnboardingScreen({
         <section className="brief-card reveal">
           <article>
             <span>Goal</span>
-            <strong>{joinText([profile.primaryGoal, ...profile.goalDetails])}</strong>
+            <strong>{joinText([...valuesFrom(profile.primaryGoal), ...valuesFrom(profile.goalDetails)])}</strong>
           </article>
           <article>
             <span>Body profile</span>
@@ -1078,15 +1274,15 @@ function OnboardingScreen({
           </article>
           <article>
             <span>Training setup</span>
-            <strong>{profile.trainingDays} days/week · {profile.sessionLength} min · {listText(profile.equipment)}</strong>
+            <strong>{profile.trainingDays} days/week · {profile.sessionLength} min · {listText(profile.availableDays)}</strong>
           </article>
           <article>
             <span>Guardrails</span>
-            <strong>{listText([...profile.pains, ...profile.pastInjuries, ...profile.movementsToAvoid])}</strong>
+            <strong>{listText([...valuesFrom(profile.pains), profile.otherPain, ...valuesFrom(profile.pastInjuries), profile.otherInjury])}</strong>
           </article>
           <article>
             <span>Mindset</span>
-            <strong>{joinText([profile.mainConcern, `Motivation ${profile.motivation}/10`, `Confidence ${profile.confidence}/10`])}</strong>
+            <strong>{joinText([profile.mainConcern, profile.stressLevel, `Motivation ${profile.motivation}/10`, `Confidence ${profile.confidence}/10`])}</strong>
           </article>
         </section>
 
@@ -1156,6 +1352,15 @@ function OnboardingScreen({
         />
       )}
 
+      {(step.type === "text" || step.textKey) && (
+        <OnboardingTextInput
+          label={step.textLabel || step.title}
+          placeholder={step.textPlaceholder}
+          value={profile[step.textKey || step.key] || ""}
+          onChange={(value) => updateValue(step.textKey || step.key, value, "text")}
+        />
+      )}
+
       {step.followUp && (
         <div className="follow-up-group reveal">
           <span>Also important</span>
@@ -1177,8 +1382,23 @@ function OnboardingScreen({
         onNext={nextStep}
         nextLabel="Next"
         phase={phaseLabel}
+        error={error}
       />
     </div>
+  );
+}
+
+function OnboardingTextInput({ label, placeholder, value, onChange }) {
+  return (
+    <label className="onboarding-text-input reveal">
+      <span>{label}</span>
+      <textarea
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder || "Type here"}
+        rows={3}
+      />
+    </label>
   );
 }
 
@@ -1204,7 +1424,7 @@ function ChoiceStack({ options, selected, selectionType, tone, onSelect }) {
 
 function PlanBuildScreen({ profile }) {
   const buildSummary = joinText([
-    profile.primaryGoal,
+    ...valuesFrom(profile.primaryGoal),
     `${profile.trainingDays} days/week`,
     profile.mainConcern,
   ]);
@@ -1260,7 +1480,7 @@ function PlanBuildScreen({ profile }) {
 
 function OnboardingReturnScreen({ profile, result }) {
   const summary = joinText([
-    profile.primaryGoal,
+    ...valuesFrom(profile.primaryGoal),
     `${profile.trainingDays} days/week`,
     result?.workoutSessionId ? "Workout built" : "Profile saved",
   ]);
@@ -1328,9 +1548,10 @@ function joinText(items) {
   return listText(items);
 }
 
-function OnboardingFooter({ current, total, progress, onBack, onNext, nextLabel, phase }) {
+function OnboardingFooter({ current, total, progress, onBack, onNext, nextLabel, phase, error }) {
   return (
     <footer className="onboarding-footer">
+      {error && <div className="onboarding-error">{error}</div>}
       <div className="onboarding-progress" aria-hidden="true">
         <i style={{ width: progress }} />
       </div>
@@ -1426,6 +1647,7 @@ function PlanScreen({
   updatePlannedSet,
   updateRest,
   startWorkout,
+  workoutStreak,
 }) {
   const [expandedExercise, setExpandedExercise] = useState(-1);
   const averageRest = Math.round(restDurations.reduce((sum, rest) => sum + rest, 0) / restDurations.length);
@@ -1456,6 +1678,10 @@ function PlanScreen({
           <span>Rest</span>
           <strong>{averageRest}s avg</strong>
         </article>
+        <article>
+          <span>Streak</span>
+          <strong>{workoutStreak.count || 0} days</strong>
+        </article>
       </section>
 
       <section className="hero-card compact-card reveal">
@@ -1472,17 +1698,38 @@ function PlanScreen({
       <section className="intake-strip reveal">
         <article>
           <span>Goal</span>
-          <strong>{joinText([onboardingProfile.primaryGoal, `${onboardingProfile.trainingDays} days/week`])}</strong>
+          <strong>{joinText([...valuesFrom(onboardingProfile.primaryGoal), `${onboardingProfile.trainingDays} days/week`])}</strong>
         </article>
         <article>
           <span>Guardrail</span>
-          <strong>{listText([...onboardingProfile.pains, ...onboardingProfile.movementsToAvoid])}</strong>
+          <strong>{listText([...valuesFrom(onboardingProfile.pains), onboardingProfile.otherPain])}</strong>
         </article>
       </section>
 
+      {(workoutPlan.warmup.length > 0 || workoutPlan.cooldown.length > 0) && (
+        <section className="prep-finish-grid reveal">
+          {workoutPlan.warmup.length > 0 && (
+            <article>
+              <span>Warmup</span>
+              {workoutPlan.warmup.slice(0, 3).map((item) => (
+                <p key={item}>{item}</p>
+              ))}
+            </article>
+          )}
+          {workoutPlan.cooldown.length > 0 && (
+            <article>
+              <span>Cooldown</span>
+              {workoutPlan.cooldown.slice(0, 3).map((item) => (
+                <p key={item}>{item}</p>
+              ))}
+            </article>
+          )}
+        </section>
+      )}
+
       <section className="exercise-list focused-list reveal">
         <div className="section-title">
-          <h3>Plan</h3>
+          <h3>Workout</h3>
         </div>
         {workoutPlan.exercises.map((exercise, index) => (
           <article
@@ -1544,6 +1791,7 @@ function PlanScreen({
                     <Play size={20} fill="currentColor" />
                   </div>
                   <span>{exercise.name} demo</span>
+                  <p>{exercise.cue}</p>
                 </div>
                 <button className="secondary-action start-exercise" onClick={() => startWorkout(index)}>
                   START HERE
@@ -1577,6 +1825,9 @@ function WorkoutScreen({
   setActiveSet,
   onSaveEdit,
   reportPain,
+  skipExercise,
+  requestSubstitution,
+  coachNotice,
   logSet,
   setScreen,
 }) {
@@ -1642,6 +1893,16 @@ function WorkoutScreen({
         </div>
       </section>
 
+      <section className="execution-note reveal">
+        <div className="play-disc small">
+          <Play size={18} fill="currentColor" />
+        </div>
+        <span>Demo cue</span>
+        <p>{current.cue}</p>
+      </section>
+
+      {coachNotice && <div className="coach-notice reveal">{coachNotice}</div>}
+
       <section className="set-selector reveal">
         {current.sets.map((_, index) => {
           const key = `${activeExercise}-${index}`;
@@ -1675,9 +1936,19 @@ function WorkoutScreen({
       </section>
 
       {!editingMode && (
-        <button className="secondary-action pain-action" onClick={reportPain}>
-          REPORT PAIN
-        </button>
+        <section className="workout-action-row reveal">
+          <button className="secondary-action" onClick={skipExercise}>
+            <SkipForward size={18} />
+            SKIP
+          </button>
+          <button className="secondary-action" onClick={requestSubstitution}>
+            <RefreshCcw size={18} />
+            SWAP
+          </button>
+          <button className="secondary-action pain-action" onClick={reportPain}>
+            REPORT PAIN
+          </button>
+        </section>
       )}
 
       <button

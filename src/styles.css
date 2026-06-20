@@ -196,7 +196,7 @@ button {
 .plan-stat-strip {
   margin: 0 0 16px;
   display: grid;
-  grid-template-columns: 1fr 1.18fr 1fr;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1px;
   overflow: hidden;
   border: 1px solid var(--line);
@@ -225,6 +225,35 @@ button {
   font-size: 15px;
   font-weight: 1000;
   white-space: nowrap;
+}
+
+.prep-finish-grid {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0 16px;
+}
+
+.prep-finish-grid article {
+  padding: 14px;
+  border-radius: 22px;
+  background: var(--panel);
+}
+
+.prep-finish-grid span {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--dim);
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.prep-finish-grid p {
+  margin: 6px 0 0;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.28;
+  font-weight: 850;
 }
 
 .onboarding-page {
@@ -630,6 +659,50 @@ button {
   width: 26px;
   height: 26px;
   border-width: 1px;
+}
+
+.onboarding-text-input {
+  display: grid;
+  gap: 9px;
+  margin: 8px 0 18px;
+}
+
+.onboarding-text-input span {
+  color: var(--dim);
+  font-size: 12px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.onboarding-text-input textarea {
+  width: 100%;
+  min-height: 104px;
+  resize: vertical;
+  padding: 16px;
+  border: 1px solid #2c2c31;
+  border-radius: 23px;
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.35;
+  outline: none;
+}
+
+.onboarding-text-input textarea:focus {
+  border-color: var(--accent);
+}
+
+.onboarding-error {
+  grid-column: 1 / -1;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: rgba(255, 219, 92, 0.12);
+  color: var(--accent);
+  font-size: 12px;
+  line-height: 1.2;
+  font-weight: 900;
+  text-align: center;
 }
 
 .brief-card {
@@ -1529,6 +1602,16 @@ button {
   text-transform: uppercase;
 }
 
+.mini-video p {
+  width: min(260px, 88%);
+  margin: 0;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.3;
+  font-weight: 850;
+  text-align: center;
+}
+
 .rest-editor {
   margin-top: 12px;
 }
@@ -2345,6 +2428,68 @@ button {
   display: grid;
   gap: 10px;
   padding: 0 18px;
+}
+
+.execution-note {
+  margin: 12px 18px 16px;
+  padding: 14px;
+  display: grid;
+  grid-template-columns: 50px 1fr;
+  align-items: center;
+  gap: 4px 12px;
+  border-radius: 23px;
+  background: var(--panel);
+}
+
+.execution-note .play-disc {
+  grid-row: 1 / 3;
+}
+
+.execution-note span {
+  color: var(--dim);
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.execution-note p {
+  margin: 0;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.28;
+  font-weight: 850;
+}
+
+.coach-notice {
+  margin: 0 18px 14px;
+  padding: 13px 14px;
+  border: 1px solid rgba(134, 255, 154, 0.24);
+  border-radius: 20px;
+  background: rgba(134, 255, 154, 0.1);
+  color: var(--green);
+  font-size: 13px;
+  line-height: 1.3;
+  font-weight: 900;
+}
+
+.workout-action-row {
+  margin: 14px 18px 0;
+  display: grid;
+  grid-template-columns: 0.86fr 0.86fr 1.28fr;
+  gap: 8px;
+}
+
+.workout-action-row .secondary-action {
+  width: 100%;
+  min-height: 52px;
+  height: 52px;
+  margin: 0;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-size: 12px;
 }
 
 .stepper {
